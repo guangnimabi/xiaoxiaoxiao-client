@@ -18,7 +18,7 @@ var Cell = cc.Class({
 
     onLoad() {
         this.label.string = "" + this.cellData.mapData.x + "_" + this.cellData.mapData.y;
-        this.node.position = cc.Vec2(this.cellData.mapData.x, this.cellData.mapData.y).mulSelf(68);
+        this.node.position = cc.Vec2(this.cellData.mapData.x + 0.5, this.cellData.mapData.y + 0.5).mulSelf(68);
 
         do {
             this.cellType = Math.floor(Math.random() * (4 - 0) + 0);
@@ -86,12 +86,12 @@ var CellData = cc.Class({
     checkLine: function () {
         if (this.current) {
             var ct = this.current.cellType;
-            cc.log("---------->>>>start bottom:" + this.mapData.x + "_" + this.mapData.y + "_" + ct);
+            // cc.log("---------->>>>start bottom:" + this.mapData.x + "_" + this.mapData.y + "_" + ct);
             var lc = this.bottomCount(ct);
             var xCount = 1 + this.leftCount(ct) + this.rightCount(ct);
             var yCount = 1 + this.topCount(ct) + lc;
 
-            cc.log(">>>>start bottom:" + lc);
+            // cc.log(">>>>start bottom:" + lc);
 
             if (xCount >= yCount) {
                 return xCount >= 3;
@@ -103,8 +103,6 @@ var CellData = cc.Class({
     },
 
     leftCount: function (ct) {
-        cc.log(this.left);
-
         if (this.left && this.left.current && this.left.current.cellType === ct) {
             return 1 + this.left.leftCount(ct);
         }
@@ -134,6 +132,22 @@ var CellData = cc.Class({
         }
 
         return 0;
+    },
+
+    exchange: function (direction) {
+        if (Math.abs(direction.x) > Math.abs(direction.y)) {
+            if (direction.x > 0) {
+                
+            } else {
+
+            }
+        } else {
+            if (direction.y > 0) {
+
+            } else {
+
+            }
+        }
     },
 });
 
