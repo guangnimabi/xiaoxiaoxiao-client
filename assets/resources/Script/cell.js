@@ -5,32 +5,26 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
-cc.Class({
+var Cell = cc.Class({
     extends: cc.Component,
 
     properties: {
-        // foo: {
-        //     // ATTRIBUTES:
-        //     default: null,        // The default value will be used only when the component attaching
-        //                           // to a node for the first time
-        //     type: cc.SpriteFrame, // optional, default is typeof default
-        //     serializable: true,   // optional, default is true
-        // },
-        // bar: {
-        //     get () {
-        //         return this._bar;
-        //     },
-        //     set (value) {
-        //         this._bar = value;
-        //     }
-        // },
+        cellData: CellData,
+        cellType: -1,
+        label: cc.Label
     },
 
     // LIFE-CYCLE CALLBACKS:
 
     onLoad() {
-        var random = Math.floor(Math.random() * (5 - 0) + 0);
-        switch (random) {
+        this.label.string = "" + this.cellData.mapData.x + "_" + this.cellData.mapData.y;
+        this.node.position = cc.Vec2(this.cellData.mapData.x, this.cellData.mapData.y).mulSelf(68);
+
+        do {
+            this.cellType = Math.floor(Math.random() * (4 - 0) + 0);
+        } while (this.cellData.checkLine());
+
+        switch (this.cellType) {
             case 0:
                 this.node.color = cc.Color.RED;
                 break;
@@ -50,6 +44,7 @@ cc.Class({
                 this.node.color = cc.Color.CYAN;
                 break;
         }
+
     },
 
     start() {
@@ -58,3 +53,88 @@ cc.Class({
 
     // update (dt) {},
 });
+
+var CellData = cc.Class({
+    properties: {
+        mapData: null,
+        current: {
+            default: null,
+            type: Cell
+        },
+        next: {
+            default: null,
+            type: CellData
+        },
+        top: {
+            default: null,
+            type: CellData
+        },
+        bottom: {
+            default: null,
+            type: CellData
+        },
+        left: {
+            default: null,
+            type: CellData
+        },
+        right: {
+            default: null,
+            type: CellData
+        }
+    },
+
+    checkLine: function () {
+        if (this.current) {
+            var ct = this.current.cellType;
+            cc.log("---------->>>>start bottom:" + this.mapData.x + "_" + this.mapData.y + "_" + ct);
+            var lc = this.bottomCount(ct);
+            var xCount = 1 + this.leftCount(ct) + this.rightCount(ct);
+            var yCount = 1 + this.topCount(ct) + lc;
+
+            cc.log(">>>>start bottom:" + lc);
+
+            if (xCount >= yCount) {
+                return xCount >= 3;
+            } else {
+                return yCount >= 3;
+            }
+        }
+        return false
+    },
+
+    leftCount: function (ct) {
+        cc.log(this.left);
+
+        if (this.left && this.left.current && this.left.current.cellType === ct) {
+            return 1 + this.left.leftCount(ct);
+        }
+
+        return 0;
+    },
+
+    rightCount: function (ct) {
+        if (this.right && this.right.current && this.right.current.cellType === ct) {
+            return 1 + this.right.rightCount(ct);
+        }
+
+        return 0;
+    },
+
+    topCount: function (ct) {
+        if (this.top && this.top.current && this.top.current.cellType === ct) {
+            return 1 + this.top.topCount(ct);
+        }
+
+        return 0;
+    },
+
+    bottomCount: function (ct) {
+        if (this.bottom && this.bottom.current && this.bottom.current.cellType === ct) {
+            return 1 + this.bottom.bottomCount(ct);
+        }
+
+        return 0;
+    },
+});
+
+module.exports = CellData;
