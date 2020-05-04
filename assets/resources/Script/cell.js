@@ -5,6 +5,8 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
+var my_event = require("my_event");
+
 var Cell = cc.Class({
     extends: cc.Component,
 
@@ -18,11 +20,11 @@ var Cell = cc.Class({
 
     onLoad() {
         this.label.string = "" + this.cellData.mapData.x + "_" + this.cellData.mapData.y;
-        this.node.position = cc.Vec2(this.cellData.mapData.x + 0.5, this.cellData.mapData.y + 0.5).mulSelf(68);
+        this.node.position = cc.v2(this.cellData.mapData.x + 0.5, this.cellData.mapData.y + 0.5).mulSelf(68);
 
         do {
             this.cellType = Math.floor(Math.random() * (4 - 0) + 0);
-        } while (this.cellData.checkLine());
+        } while (this.lineSum().length >= 3);
 
         switch (this.cellType) {
             case 0:
@@ -52,6 +54,53 @@ var Cell = cc.Class({
     },
 
     // update (dt) {},
+
+    lineSum: function () {
+        var ct = this.cellType;
+
+        var xSum = this.cellData.leftSum(ct).concat(this.cellData.rightSum(ct));
+
+        var ySum = this.cellData.topSum(ct).concat(this.cellData.bottomSum(ct));
+
+        if (xSum.length >= 2 || ySum.length >= 2) {
+            return xSum.concat([this]).concat(ySum);
+        }
+
+        return [];
+    },
+
+    exchange: function (direction) {
+        if (Math.abs(direction.x) > Math.abs(direction.y)) {
+            if (direction.x > 0) {
+                if (this.cellData.right) {
+                    my_event.dispatchExchangeEvent(this, this.cellData.right.current);
+                }
+            } else {
+                if (this.cellData.left) {
+                    my_event.dispatchExchangeEvent(this, this.cellData.left.current);
+                }
+            }
+        } else {
+            if (direction.y > 0) {
+                if (this.cellData.top) {
+                    my_event.dispatchExchangeEvent(this, this.cellData.top.current);
+                }
+            } else {
+                if (this.cellData.bottom) {
+                    my_event.dispatchExchangeEvent(this, this.cellData.bottom.current);
+                }
+            }
+        }
+    },
+
+    move: function (callback) {
+        cc.tween(this.node)
+            .to(0.3, { position: cc.v2(this.cellData.mapData.x + 0.5, this.cellData.mapData.y + 0.5).mulSelf(68) })
+            .call(() => {
+                callback(this);
+            })
+            .start()
+    },
 });
 
 var CellData = cc.Class({
@@ -83,72 +132,39 @@ var CellData = cc.Class({
         }
     },
 
-    checkLine: function () {
-        if (this.current) {
-            var ct = this.current.cellType;
-            // cc.log("---------->>>>start bottom:" + this.mapData.x + "_" + this.mapData.y + "_" + ct);
-            var lc = this.bottomCount(ct);
-            var xCount = 1 + this.leftCount(ct) + this.rightCount(ct);
-            var yCount = 1 + this.topCount(ct) + lc;
-
-            // cc.log(">>>>start bottom:" + lc);
-
-            if (xCount >= yCount) {
-                return xCount >= 3;
-            } else {
-                return yCount >= 3;
-            }
-        }
-        return false
-    },
-
-    leftCount: function (ct) {
+    leftSum: function (ct) {
         if (this.left && this.left.current && this.left.current.cellType === ct) {
-            return 1 + this.left.leftCount(ct);
+            return [this.current].concat(this.left.leftSum(ct));
         }
 
-        return 0;
+        return [];
     },
 
-    rightCount: function (ct) {
+    rightSum: function (ct) {
         if (this.right && this.right.current && this.right.current.cellType === ct) {
-            return 1 + this.right.rightCount(ct);
+            return [this.current].concat(this.right.rightSum(ct));
         }
 
-        return 0;
+        return [];
     },
 
-    topCount: function (ct) {
+    topSum: function (ct) {
         if (this.top && this.top.current && this.top.current.cellType === ct) {
-            return 1 + this.top.topCount(ct);
+            return [this.current].concat(this.top.topSum(ct));
         }
 
-        return 0;
+        return [];
     },
 
-    bottomCount: function (ct) {
+    bottomSum: function (ct) {
         if (this.bottom && this.bottom.current && this.bottom.current.cellType === ct) {
-            return 1 + this.bottom.bottomCount(ct);
+            return [this.current].concat(this.bottom.bottomSum(ct));
         }
 
-        return 0;
+        return [];
     },
 
-    exchange: function (direction) {
-        if (Math.abs(direction.x) > Math.abs(direction.y)) {
-            if (direction.x > 0) {
-                
-            } else {
 
-            }
-        } else {
-            if (direction.y > 0) {
-
-            } else {
-
-            }
-        }
-    },
 });
 
 module.exports = CellData;

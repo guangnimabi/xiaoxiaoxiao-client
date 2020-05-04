@@ -6,7 +6,8 @@
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
 var Map = require("./data/map");
-var CellData = require("../resources/Script/cell")
+var CellData = require("../resources/Script/cell");
+var my_event = require("my_event");
 
 cc.Class({
     extends: cc.Component,
@@ -16,7 +17,6 @@ cc.Class({
             default: null,
             type: cc.Node,
         },
-        _lastTouch: cc.Vec2,
         _cellDatas: null,
 
 
@@ -43,15 +43,63 @@ cc.Class({
         var self = this;
 
         //regist touch event
-        this.content.on(cc.Node.EventType.TOUCH_START, function (event) {
-            self._lastTouch = self.content.convertToNodeSpaceAR(event.getLocation());
-        });
-        this.content.on(cc.Node.EventType.TOUCH_END, function (event) {
-            direction = self.content.convertToNodeSpaceAR(event.getLocation()).sub(self._lastTouch);
-            var cellKey = "" + Math.floor(self._lastTouch.x / 68) + "_" + Math.floor(self._lastTouch.y / 68);
-            if (self._cellDatas.hasOwnProperty(cellKey)){
-                self._cellDatas[cellKey].exchange(direction);
+        my_event.receiver = self.content;
+        my_event.registOperateEvent(function (position, direction) {
+            var cellKey = "" + Math.floor(position.x / 68) + "_" + Math.floor(position.y / 68);
+            // cc.log(cellKey + "    "+direction.x +"," + direction.y);
+            if (self._cellDatas.hasOwnProperty(cellKey)) {
+                self._cellDatas[cellKey].current.exchange(direction);
             }
+        });
+        my_event.registExchangeEvent(function (cell1, cell2) {
+            var tmpCellData = cell1.cellData;
+
+            cell1.cellData = cell2.cellData;
+            cell1.cellData.current = cell1;
+            cell2.cellData = tmpCellData;
+            cell2.cellData.current = cell2;
+
+            var allCells = [cell1, cell2];
+            var callback = function (cell) {
+                var index = allCells.indexOf(cell);
+                if (index > -1) {
+                    allCells.splice(index, 1);
+                }
+
+                if (allCells.length === 0) {
+                    var destroyCells = cell1.lineSum().concat(cell2.lineSum());
+                    if (destroyCells.length===0) {
+                        my_event.dispatchExchangeRollbackEvent(cell1, cell2);
+                    }
+                }
+            }
+
+            cell1.move(callback);
+            cell2.move(callback);
+        });
+        my_event.registExchangeRollbackEvent(function (cell1, cell2) {
+            var tmpCellData = cell1.cellData;
+
+            cell1.cellData = cell2.cellData;
+            cell1.cellData.current = cell1;
+            cell2.cellData = tmpCellData;
+            cell2.cellData.current = cell2;
+
+            var allCells = [cell1, cell2];
+            var callback = function (cell) {
+                var index = allCells.indexOf(cell);
+                if (index > -1) {
+                    allCells.splice(index, 1);
+                }
+
+                if (allCells.length > 0) {
+                    //打开控制面板
+                    cc.log("rollback success");
+                }
+            }
+
+            cell1.move(callback);
+            cell2.move(callback);
         });
 
         //init map
