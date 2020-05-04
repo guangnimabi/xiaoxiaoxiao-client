@@ -11,17 +11,17 @@ var map_6_6 = {
     "1_1": {
         "x": 1,
         "y": 1,
-        "isFirst": false,
+        "last": "1_2",
         "next": "",
-        "top": "2_1",
+        "top": "1_2",
         "bottom": "",
         "left": "",
-        "right": "1_2"
+        "right": "2_1"
     },
     "1_2": {
         "x": 1,
         "y": 2,
-        "isFirst": false,
+        "last": "1_3",
         "next": "1_1",
         "top": "1_3",
         "bottom": "1_1",
@@ -31,7 +31,7 @@ var map_6_6 = {
     "1_3": {
         "x": 1,
         "y": 3,
-        "isFirst": false,
+        "last": "1_4",
         "next": "1_2",
         "top": "1_4",
         "bottom": "1_2",
@@ -41,7 +41,7 @@ var map_6_6 = {
     "1_4": {
         "x": 1,
         "y": 4,
-        "isFirst": false,
+        "last": "1_5",
         "next": "1_3",
         "top": "1_5",
         "bottom": "1_3",
@@ -51,7 +51,7 @@ var map_6_6 = {
     "1_5": {
         "x": 1,
         "y": 5,
-        "isFirst": false,
+        "last": "1_6",
         "next": "1_4",
         "top": "1_6",
         "bottom": "1_4",
@@ -61,7 +61,7 @@ var map_6_6 = {
     "1_6": {
         "x": 1,
         "y": 6,
-        "isFirst": true,
+        "last": "",
         "next": "1_5",
         "top": "",
         "bottom": "1_5",
@@ -71,7 +71,7 @@ var map_6_6 = {
     "2_1": {
         "x": 2,
         "y": 1,
-        "isFirst": false,
+        "last": "2_2",
         "next": "",
         "top": "2_2",
         "bottom": "",
@@ -81,7 +81,7 @@ var map_6_6 = {
     "2_2": {
         "x": 2,
         "y": 2,
-        "isFirst": false,
+        "last": "2_3",
         "next": "2_1",
         "top": "2_3",
         "bottom": "2_1",
@@ -91,7 +91,7 @@ var map_6_6 = {
     "2_3": {
         "x": 2,
         "y": 3,
-        "isFirst": false,
+        "last": "2_4",
         "next": "2_2",
         "top": "2_4",
         "bottom": "2_2",
@@ -101,7 +101,7 @@ var map_6_6 = {
     "2_4": {
         "x": 2,
         "y": 4,
-        "isFirst": false,
+        "last": "2_5",
         "next": "2_3",
         "top": "2_5",
         "bottom": "2_3",
@@ -111,7 +111,7 @@ var map_6_6 = {
     "2_5": {
         "x": 2,
         "y": 5,
-        "isFirst": false,
+        "last": "2_6",
         "next": "2_4",
         "top": "2_6",
         "bottom": "2_4",
@@ -121,7 +121,7 @@ var map_6_6 = {
     "2_6": {
         "x": 2,
         "y": 6,
-        "isFirst": true,
+        "last": "",
         "next": "2_5",
         "top": "",
         "bottom": "2_5",
@@ -131,7 +131,7 @@ var map_6_6 = {
     "3_1": {
         "x": 3,
         "y": 1,
-        "isFirst": false,
+        "last": "3_2",
         "next": "",
         "top": "3_2",
         "bottom": "",
@@ -141,9 +141,9 @@ var map_6_6 = {
     "3_2": {
         "x": 3,
         "y": 2,
-        "isFirst": false,
+        "last": "3_3",
         "next": "3_1",
-        "top": "3_4",
+        "top": "3_3",
         "bottom": "3_1",
         "left": "2_2",
         "right": "4_2"
@@ -151,7 +151,7 @@ var map_6_6 = {
     "3_3": {
         "x": 3,
         "y": 3,
-        "isFirst": false,
+        "last": "3_4",
         "next": "3_2",
         "top": "3_4",
         "bottom": "3_2",
@@ -161,7 +161,7 @@ var map_6_6 = {
     "3_4": {
         "x": 3,
         "y": 4,
-        "isFirst": false,
+        "last": "3_5",
         "next": "3_3",
         "top": "3_5",
         "bottom": "3_3",
@@ -171,7 +171,7 @@ var map_6_6 = {
     "3_5": {
         "x": 3,
         "y": 5,
-        "isFirst": false,
+        "last": "3_6",
         "next": "3_4",
         "top": "3_6",
         "bottom": "3_4",
@@ -181,7 +181,7 @@ var map_6_6 = {
     "3_6": {
         "x": 3,
         "y": 6,
-        "isFirst": true,
+        "last": "",
         "next": "3_5",
         "top": "",
         "bottom": "3_5",
@@ -191,7 +191,7 @@ var map_6_6 = {
     "4_1": {
         "x": 4,
         "y": 1,
-        "isFirst": false,
+        "last": "4_2",
         "next": "",
         "top": "4_2",
         "bottom": "",
@@ -201,7 +201,7 @@ var map_6_6 = {
     "4_2": {
         "x": 4,
         "y": 2,
-        "isFirst": false,
+        "last": "4_3",
         "next": "4_1",
         "top": "4_3",
         "bottom": "4_1",
@@ -211,7 +211,7 @@ var map_6_6 = {
     "4_3": {
         "x": 4,
         "y": 3,
-        "isFirst": false,
+        "last": "4_4",
         "next": "4_2",
         "top": "4_4",
         "bottom": "4_2",
@@ -221,7 +221,7 @@ var map_6_6 = {
     "4_4": {
         "x": 4,
         "y": 4,
-        "isFirst": false,
+        "last": "4_5",
         "next": "4_3",
         "top": "4_5",
         "bottom": "4_3",
@@ -231,7 +231,7 @@ var map_6_6 = {
     "4_5": {
         "x": 4,
         "y": 5,
-        "isFirst": false,
+        "last": "4_6",
         "next": "4_4",
         "top": "4_6",
         "bottom": "4_4",
@@ -241,7 +241,7 @@ var map_6_6 = {
     "4_6": {
         "x": 4,
         "y": 6,
-        "isFirst": true,
+        "last": "",
         "next": "4_5",
         "top": "",
         "bottom": "4_5",
@@ -251,7 +251,7 @@ var map_6_6 = {
     "5_1": {
         "x": 5,
         "y": 1,
-        "isFirst": false,
+        "last": "5_2",
         "next": "",
         "top": "5_2",
         "bottom": "",
@@ -261,7 +261,7 @@ var map_6_6 = {
     "5_2": {
         "x": 5,
         "y": 2,
-        "isFirst": false,
+        "last": "5_3",
         "next": "5_1",
         "top": "5_3",
         "bottom": "5_1",
@@ -271,7 +271,7 @@ var map_6_6 = {
     "5_3": {
         "x": 5,
         "y": 3,
-        "isFirst": false,
+        "last": "5_4",
         "next": "5_2",
         "top": "5_4",
         "bottom": "5_2",
@@ -281,7 +281,7 @@ var map_6_6 = {
     "5_4": {
         "x": 5,
         "y": 4,
-        "isFirst": false,
+        "last": "5_5",
         "next": "5_3",
         "top": "5_5",
         "bottom": "5_3",
@@ -291,7 +291,7 @@ var map_6_6 = {
     "5_5": {
         "x": 5,
         "y": 5,
-        "isFirst": false,
+        "last": "5_6",
         "next": "5_4",
         "top": "5_6",
         "bottom": "5_4",
@@ -301,7 +301,7 @@ var map_6_6 = {
     "5_6": {
         "x": 5,
         "y": 6,
-        "isFirst": true,
+        "last": "",
         "next": "5_5",
         "top": "",
         "bottom": "5_5",
@@ -311,7 +311,7 @@ var map_6_6 = {
     "6_1": {
         "x": 6,
         "y": 1,
-        "isFirst": false,
+        "last": "6_2",
         "next": "",
         "top": "6_2",
         "bottom": "",
@@ -321,7 +321,7 @@ var map_6_6 = {
     "6_2": {
         "x": 6,
         "y": 2,
-        "isFirst": false,
+        "last": "6_3",
         "next": "6_1",
         "top": "6_3",
         "bottom": "6_1",
@@ -331,7 +331,7 @@ var map_6_6 = {
     "6_3": {
         "x": 6,
         "y": 3,
-        "isFirst": false,
+        "last": "6_4",
         "next": "6_2",
         "top": "6_4",
         "bottom": "6_2",
@@ -341,7 +341,7 @@ var map_6_6 = {
     "6_4": {
         "x": 6,
         "y": 4,
-        "isFirst": false,
+        "last": "6_5",
         "next": "6_3",
         "top": "6_5",
         "bottom": "6_3",
@@ -351,8 +351,8 @@ var map_6_6 = {
     "6_5": {
         "x": 6,
         "y": 5,
-        "isFirst": false,
-        "next": "6_4", 
+        "last": "6_6",
+        "next": "6_4",
         "top": "6_6",
         "bottom": "6_4",
         "left": "5_5",
@@ -361,7 +361,7 @@ var map_6_6 = {
     "6_6": {
         "x": 6,
         "y": 6,
-        "isFirst": true,
+        "last": "",
         "next": "6_5",
         "top": "",
         "bottom": "6_5",

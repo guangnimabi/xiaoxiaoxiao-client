@@ -67,15 +67,17 @@ cc.Class({
                 }
 
                 if (allCells.length === 0) {
-                    var destroyCells = cell1.lineSum().concat(cell2.lineSum());
-                    if (destroyCells.length===0) {
+                    var disappearCells = cell1.lineSum().concat(cell2.lineSum());
+                    if (disappearCells.length === 0) {
                         my_event.dispatchExchangeRollbackEvent(cell1, cell2);
+                    } else {
+                        my_event.dispatchDisappearEvent(disappearCells);
                     }
                 }
             }
 
-            cell1.move(callback);
-            cell2.move(callback);
+            cell1.move([cell1.cellData], callback);
+            cell2.move([cell2.cellData], callback);
         });
         my_event.registExchangeRollbackEvent(function (cell1, cell2) {
             var tmpCellData = cell1.cellData;
@@ -92,14 +94,71 @@ cc.Class({
                     allCells.splice(index, 1);
                 }
 
-                if (allCells.length > 0) {
+                if (allCells.length === 0) {
                     //打开控制面板
                     cc.log("rollback success");
                 }
-            }
+            };
 
-            cell1.move(callback);
-            cell2.move(callback);
+            cell1.move([cell1.cellData], callback);
+            cell2.move([cell2.cellData], callback);
+        });
+        my_event.registDisappearEvent(function (disappearCells) {
+            var renewCells = [].concat(disappearCells);
+            var callback = function (cell) {
+                var index = disappearCells.indexOf(cell);
+                if (index > -1) {
+                    disappearCells.splice(index, 1);
+                }
+
+                if (disappearCells.length === 0) {
+                    my_event.dispatchRenewEvent(renewCells);
+                }
+            };
+
+            disappearCells.forEach(cell => {
+                cell.disappear(callback);
+            });
+        });
+        my_event.registRenewEvent(function (renewCells) {
+            var allCells = [];
+            var callback = function (cell) {
+                var index = allCells.indexOf(cell);
+                if (index > -1) {
+                    allCells.splice(index, 1);
+                }
+
+                if (allCells.length === 0) {
+                    cc.log("renew success");
+                }
+            };
+
+            //清理要消除的cell
+            var clearCellDatas = [];
+            renewCells.forEach(renewCell => {
+                clearCellDatas.push(renewCell.cellData);
+
+                renewCell.cellData.current = null;
+                renewCell.cellData = null;
+            });
+
+            //处理现有的cell移动
+            clearCellDatas.forEach(clearCellData => {
+                var lastCells = clearCellData.allLastCells();
+                lastCells.forEach(lastCell => {
+                    var moveCellDatas = lastCell.cellData.allMoveCellDatas();
+                    if (moveCellDatas.length > 0) {
+                        allCells.push(lastCell);
+                        var targetCellData = moveCellDatas[moveCellDatas.length - 1];
+
+                        lastCell.cellData.current = null;
+                        targetCellData.current = lastCell;
+                        lastCell.cellData = targetCellData;
+
+                        lastCell.move(moveCellDatas, callback);
+                    }
+                });
+            });
         });
 
         //init map
@@ -117,6 +176,9 @@ cc.Class({
         for (const key in self._cellDatas) {
 
             const cellData = self._cellDatas[key];
+            if (cellData.mapData.last && self._cellDatas.hasOwnProperty(cellData.mapData.last)) {
+                cellData.last = self._cellDatas[cellData.mapData.last];
+            }
             if (cellData.mapData.next && self._cellDatas.hasOwnProperty(cellData.mapData.next)) {
                 cellData.next = self._cellDatas[cellData.mapData.next];
             }

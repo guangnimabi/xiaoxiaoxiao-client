@@ -1,5 +1,7 @@
 const EVENT_EXCHANGE = "event_exchange"
 const EVENT_EXCHANGE_ROLLBACK = "event_exchange_rollback"
+const EVENT_DISAPPEAR = "event_disappear"
+const EVENT_RENEW = "event_renew"
 
 module.exports = cc.Class({
     statics: {
@@ -28,6 +30,8 @@ module.exports = cc.Class({
 
                 self._lastTouch = new cc.v2();
                 self._lastlastTouch = new cc.v2();
+
+                cc.log(position.x + "," + position.y + "     " + direction.x + ","+direction.y)
                 eventHandler(position, direction);
             });
         },
@@ -52,6 +56,34 @@ module.exports = cc.Class({
 
         dispatchExchangeRollbackEvent: function (cell1, cell2) {
             this.receiver.emit(EVENT_EXCHANGE_ROLLBACK, cell1, cell2);
+        },
+
+        //消失事件
+        registDisappearEvent: function (eventHandler) {
+            this.receiver.on(EVENT_DISAPPEAR, function (event) {
+                var disappearCells = event.getUserData();
+                eventHandler(disappearCells);
+            });
+        },
+
+        dispatchDisappearEvent: function (disappearCells) {
+            var event = new cc.Event.EventCustom(EVENT_DISAPPEAR, false);
+            event.setUserData(disappearCells);
+            this.receiver.dispatchEvent(event);
+        },
+
+        //重建事件
+        registRenewEvent: function (eventHandler) {
+            this.receiver.on(EVENT_RENEW, function (event) {
+                var renewCells = event.getUserData();
+                eventHandler(renewCells);
+            });
+        },
+
+        dispatchRenewEvent: function (renewCells) {
+            var event = new cc.Event.EventCustom(EVENT_RENEW, false);
+            event.setUserData(renewCells);
+            this.receiver.dispatchEvent(event);
         },
     }
 });

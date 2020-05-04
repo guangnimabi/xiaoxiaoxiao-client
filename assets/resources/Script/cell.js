@@ -20,7 +20,7 @@ var Cell = cc.Class({
 
     onLoad() {
         this.label.string = "" + this.cellData.mapData.x + "_" + this.cellData.mapData.y;
-        this.node.position = cc.v2(this.cellData.mapData.x + 0.5, this.cellData.mapData.y + 0.5).mulSelf(68);
+        this.node.position = this.cellData.getPosition();
 
         do {
             this.cellType = Math.floor(Math.random() * (4 - 0) + 0);
@@ -64,9 +64,9 @@ var Cell = cc.Class({
 
         if (xSum.length >= 2 || ySum.length >= 2) {
             return xSum.concat([this]).concat(ySum);
+        } else {
+            return [];
         }
-
-        return [];
     },
 
     exchange: function (direction) {
@@ -93,9 +93,19 @@ var Cell = cc.Class({
         }
     },
 
-    move: function (callback) {
+    move: function (cellDatas, callback) {
+        var tween = cc.tween(this.node);
+        cellDatas.forEach(cd => {
+            tween.to(0.2, { position: cd.getPosition() })
+        });
+        tween.call(() => {
+            callback(this);
+        }).start()
+    },
+
+    disappear: function (callback) {
         cc.tween(this.node)
-            .to(0.3, { position: cc.v2(this.cellData.mapData.x + 0.5, this.cellData.mapData.y + 0.5).mulSelf(68) })
+            .to(0.2, { scale: 0 })
             .call(() => {
                 callback(this);
             })
@@ -109,6 +119,10 @@ var CellData = cc.Class({
         current: {
             default: null,
             type: Cell
+        },
+        last: {
+            default: null,
+            type: CellData
         },
         next: {
             default: null,
@@ -132,9 +146,13 @@ var CellData = cc.Class({
         }
     },
 
+    getPosition: function () {
+        return cc.v2(this.mapData.x + 0.5, this.mapData.y + 0.5).mulSelf(68);
+    },
+
     leftSum: function (ct) {
         if (this.left && this.left.current && this.left.current.cellType === ct) {
-            return [this.current].concat(this.left.leftSum(ct));
+            return [this.left.current].concat(this.left.leftSum(ct));
         }
 
         return [];
@@ -142,7 +160,7 @@ var CellData = cc.Class({
 
     rightSum: function (ct) {
         if (this.right && this.right.current && this.right.current.cellType === ct) {
-            return [this.current].concat(this.right.rightSum(ct));
+            return [this.right.current].concat(this.right.rightSum(ct));
         }
 
         return [];
@@ -150,7 +168,7 @@ var CellData = cc.Class({
 
     topSum: function (ct) {
         if (this.top && this.top.current && this.top.current.cellType === ct) {
-            return [this.current].concat(this.top.topSum(ct));
+            return [this.top.current].concat(this.top.topSum(ct));
         }
 
         return [];
@@ -158,13 +176,31 @@ var CellData = cc.Class({
 
     bottomSum: function (ct) {
         if (this.bottom && this.bottom.current && this.bottom.current.cellType === ct) {
-            return [this.current].concat(this.bottom.bottomSum(ct));
+            return [this.bottom.current].concat(this.bottom.bottomSum(ct));
         }
 
         return [];
     },
 
+    allLastCells: function () {
+        if (this.last) {
+            if (this.last.current) {
+                return [this.last.current].concat(this.last.allLastCells());
+            } else {
+                return this.last.allLastCells();
+            }
+        } else {
+            return [];
+        }
+    },
 
+    allMoveCellDatas: function () {
+        if (this.next && !this.next.current) {
+            return [this.next].concat(this.next.allMoveCellDatas());
+        } else {
+            return [];
+        }
+    }
 });
 
 module.exports = CellData;
