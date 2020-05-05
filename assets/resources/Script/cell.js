@@ -125,7 +125,7 @@ var CellData = cc.Class({
 
             for (const k in mapData) {
                 var v = mapData[k];
-                this._cellDatas[k] = CellData.generateCellData(cc.v2(v.x, v.y));
+                this._cellDatas[k] = CellData.generateCellData(cc.v2(v.x, v.y, 0));
             }
 
             for (const k in mapData) {
@@ -167,6 +167,7 @@ var CellData = cc.Class({
     },
 
     properties: {
+        _position: cc.Vec3,
         id: {
             get: function () {
                 if (this._position) {
