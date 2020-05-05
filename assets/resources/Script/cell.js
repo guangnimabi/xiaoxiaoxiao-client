@@ -7,6 +7,9 @@
 
 var my_event = require("my_event");
 
+const CELL_TYPE_COMMON = 0;
+const CELL_TYPE_BORN = 1;
+
 var Cell = cc.Class({
     extends: cc.Component,
 
@@ -111,6 +114,11 @@ var Cell = cc.Class({
             })
             .start()
     },
+
+    renew: function () {
+        this.node.scale = 1;
+        this.node.position = this.cellData.position;
+    },
 });
 
 var CellData = cc.Class({
@@ -123,11 +131,13 @@ var CellData = cc.Class({
                 this._cellDatas = {};
             }
 
+            //生成所有cell data
             for (const k in mapData) {
                 var v = mapData[k];
-                this._cellDatas[k] = CellData.generateCellData(cc.v2(v.x, v.y, 0));
+                CellData.generateCellData(cc.v2(v.x, v.y, 0), v.type);
             }
 
+            //创建各个cell data关联关系
             for (const k in mapData) {
                 var v = mapData[k];
                 const cellData = this._cellDatas[k];
@@ -149,6 +159,9 @@ var CellData = cc.Class({
                 if (v.right && this._cellDatas.hasOwnProperty(v.right)) {
                     cellData.right = this._cellDatas[v.right];
                 }
+                if (v.born && this._cellDatas.hasOwnProperty(v.born)) {
+                    cellData.born = this._cellDatas[v.born];
+                }
             }
         },
 
@@ -159,9 +172,12 @@ var CellData = cc.Class({
             return null;
         },
 
-        generateCellData: function (position) {
+        generateCellData: function (position, type) {
             var cellData = new CellData();
             cellData._position = position;
+            cellData.type = type;
+
+            CellData._cellDatas[cellData.id] = cellData;
             return cellData;
         },
     },
@@ -171,7 +187,7 @@ var CellData = cc.Class({
         id: {
             get: function () {
                 if (this._position) {
-                    return this._position.x + "_" + this._position.y;
+                    return this._position.x + "_" + this._position.y + "_" + this._position.z;
                 }
 
                 return "";
@@ -182,6 +198,7 @@ var CellData = cc.Class({
                 return this._position.add(cc.v2(0.5, 0.5)).mul(CellData.size);
             }
         },
+        type: 0,
         current: {
             default: null,
             type: Cell
@@ -210,6 +227,14 @@ var CellData = cc.Class({
             default: null,
             type: CellData
         },
+        born: {
+            default: null,
+            type: CellData
+        },
+    },
+
+    isCommon: function () {
+        return this.type === CELL_TYPE_COMMON;
     },
 
     leftSum: function (ct) {
@@ -262,7 +287,25 @@ var CellData = cc.Class({
         } else {
             return [];
         }
-    }
+    },
+
+    findBorn: function () {
+        if (this.born) {
+            return this.born.findBorn();
+        }else{
+            if (this.last) {
+                if (this.last.current) {
+                    return this.last.findBorn();
+                } else {
+                    return this;
+                }
+            } else {
+                var lastCellData = CellData.generateCellData(this._position.sub(cc.v3(0, 0, -1)), CELL_TYPE_BORN);
+                this.last = lastCellData;
+                return this;
+            }
+        }
+    },
 });
 
 module.exports = CellData;

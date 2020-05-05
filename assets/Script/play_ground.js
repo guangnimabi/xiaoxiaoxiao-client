@@ -27,9 +27,9 @@ cc.Class({
         //regist touch event
         my_event.receiver = self.content;
         my_event.registOperateEvent(function (position, direction) {
-            var id = "" + Math.floor(position.x / CellData.size) + "_" + Math.floor(position.y / CellData.size);
+            var id = "" + Math.floor(position.x / CellData.size) + "_" + Math.floor(position.y / CellData.size) + "_0";
             var cellData = CellData.getCellDataById(id);
-            if (cellData) {
+            if (cellData && cellData.current) {
                 cellData.current.exchange(direction);
             }
         });
@@ -115,31 +115,45 @@ cc.Class({
                 }
             };
 
-            //清理要消除的cell
+            var moveCell = function(currentCell) {
+                var moveCellDatas = currentCell.cellData.allMoveCellDatas();
+                if (moveCellDatas.length > 0) {
+                    allCells.push(currentCell);
+                    var targetCellData = moveCellDatas[moveCellDatas.length - 1];
+
+                    currentCell.cellData.current = null;
+                    targetCellData.current = currentCell;
+                    currentCell.cellData = targetCellData;
+
+                    currentCell.move(moveCellDatas, callback);
+                }
+            };
+
+            //处理消除的cell
             var clearCellDatas = [];
             renewCells.forEach(renewCell => {
                 clearCellDatas.push(renewCell.cellData);
 
+                var bornCellData = renewCell.cellData.findBorn();
+
                 renewCell.cellData.current = null;
-                renewCell.cellData = null;
+
+                bornCellData.current = renewCell;
+                renewCell.cellData = bornCellData;
             });
 
-            //处理现有的cell移动
+            //计算现有的cell移动
             clearCellDatas.forEach(clearCellData => {
                 var lastCells = clearCellData.allLastCells();
                 lastCells.forEach(lastCell => {
-                    var moveCellDatas = lastCell.cellData.allMoveCellDatas();
-                    if (moveCellDatas.length > 0) {
-                        allCells.push(lastCell);
-                        var targetCellData = moveCellDatas[moveCellDatas.length - 1];
-
-                        lastCell.cellData.current = null;
-                        targetCellData.current = lastCell;
-                        lastCell.cellData = targetCellData;
-
-                        lastCell.move(moveCellDatas, callback);
-                    }
+                    moveCell(lastCell);
                 });
+            });
+
+            //计算消除的cell移动
+            renewCells.forEach(renewCell => {
+                renewCell.renew();
+                moveCell(renewCell);
             });
         });
 
@@ -151,15 +165,16 @@ cc.Class({
         cc.loader.loadRes("prefab/cell", function (err, prefab) {
 
             for (const id in mapData) {
-                const cellData = CellData.getCellDataById(id);
+                var cellData = CellData.getCellDataById(id);
+                if (cellData && cellData.isCommon()) {
+                    var node = cc.instantiate(prefab);
+                    var cell = node.getComponent("cell");
 
-                var node = cc.instantiate(prefab);
-                var cell = node.getComponent("cell");
+                    cellData.current = cell;
+                    cell.cellData = cellData;
 
-                cellData.current = cell;
-                cell.cellData = cellData;
-
-                self.content.addChild(node);
+                    self.content.addChild(node);
+                }
             }
         });
     },
