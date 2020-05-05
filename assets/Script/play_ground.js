@@ -17,24 +17,6 @@ cc.Class({
             default: null,
             type: cc.Node,
         },
-        _cellDatas: null,
-
-
-        // foo: {
-        //     // ATTRIBUTES:
-        //     default: null,        // The default value will be used only when the component attaching
-        //                           // to a node for the first time
-        //     type: cc.SpriteFrame, // optional, default is typeof default
-        //     serializable: true,   // optional, default is true
-        // },
-        // bar: {
-        //     get () {
-        //         return this._bar;
-        //     },
-        //     set (value) {
-        //         this._bar = value;
-        //     }
-        // },
     },
 
     // LIFE-CYCLE CALLBACKS:
@@ -45,10 +27,10 @@ cc.Class({
         //regist touch event
         my_event.receiver = self.content;
         my_event.registOperateEvent(function (position, direction) {
-            var cellKey = "" + Math.floor(position.x / 68) + "_" + Math.floor(position.y / 68);
-            // cc.log(cellKey + "    "+direction.x +"," + direction.y);
-            if (self._cellDatas.hasOwnProperty(cellKey)) {
-                self._cellDatas[cellKey].current.exchange(direction);
+            var id = "" + Math.floor(position.x / CellData.size) + "_" + Math.floor(position.y / CellData.size);
+            var cellData = CellData.getCellDataById(id);
+            if (cellData) {
+                cellData.current.exchange(direction);
             }
         });
         my_event.registExchangeEvent(function (cell1, cell2) {
@@ -162,46 +144,14 @@ cc.Class({
         });
 
         //init map
-        self._cellDatas = {};
-
         var mapData = Map.getMapData();
-        for (const key in mapData) {
-            const element = mapData[key];
-
-            var cellData = new CellData();
-            cellData.mapData = element;
-            self._cellDatas[key] = cellData;
-        }
-
-        for (const key in self._cellDatas) {
-
-            const cellData = self._cellDatas[key];
-            if (cellData.mapData.last && self._cellDatas.hasOwnProperty(cellData.mapData.last)) {
-                cellData.last = self._cellDatas[cellData.mapData.last];
-            }
-            if (cellData.mapData.next && self._cellDatas.hasOwnProperty(cellData.mapData.next)) {
-                cellData.next = self._cellDatas[cellData.mapData.next];
-            }
-            if (cellData.mapData.top && self._cellDatas.hasOwnProperty(cellData.mapData.top)) {
-                cellData.top = self._cellDatas[cellData.mapData.top];
-            }
-            if (cellData.mapData.bottom && self._cellDatas.hasOwnProperty(cellData.mapData.bottom)) {
-                cellData.bottom = self._cellDatas[cellData.mapData.bottom];
-            }
-            if (cellData.mapData.left && self._cellDatas.hasOwnProperty(cellData.mapData.left)) {
-                cellData.left = self._cellDatas[cellData.mapData.left];
-            }
-            if (cellData.mapData.right && self._cellDatas.hasOwnProperty(cellData.mapData.right)) {
-                cellData.right = self._cellDatas[cellData.mapData.right];
-            }
-
-        }
+        CellData.initByMapData(mapData);
 
         //init cells
         cc.loader.loadRes("prefab/cell", function (err, prefab) {
 
-            for (const key in self._cellDatas) {
-                const cellData = self._cellDatas[key];
+            for (const id in mapData) {
+                const cellData = CellData.getCellDataById(id);
 
                 var node = cc.instantiate(prefab);
                 var cell = node.getComponent("cell");

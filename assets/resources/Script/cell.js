@@ -19,8 +19,8 @@ var Cell = cc.Class({
     // LIFE-CYCLE CALLBACKS:
 
     onLoad() {
-        this.label.string = "" + this.cellData.mapData.x + "_" + this.cellData.mapData.y;
-        this.node.position = this.cellData.getPosition();
+        this.label.string = this.cellData.id;
+        this.node.position = this.cellData.position;
 
         do {
             this.cellType = Math.floor(Math.random() * (4 - 0) + 0);
@@ -96,7 +96,7 @@ var Cell = cc.Class({
     move: function (cellDatas, callback) {
         var tween = cc.tween(this.node);
         cellDatas.forEach(cd => {
-            tween.to(0.2, { position: cd.getPosition() })
+            tween.to(0.2, { position: cd.position })
         });
         tween.call(() => {
             callback(this);
@@ -114,8 +114,73 @@ var Cell = cc.Class({
 });
 
 var CellData = cc.Class({
+    statics: {
+        size: 68,
+        _cellDatas: null,
+
+        initByMapData: function (mapData) {
+            if (!this._cellDatas) {
+                this._cellDatas = {};
+            }
+
+            for (const k in mapData) {
+                var v = mapData[k];
+                this._cellDatas[k] = CellData.generateCellData(cc.v2(v.x, v.y));
+            }
+
+            for (const k in mapData) {
+                var v = mapData[k];
+                const cellData = this._cellDatas[k];
+                if (v.last && this._cellDatas.hasOwnProperty(v.last)) {
+                    cellData.last = this._cellDatas[v.last];
+                }
+                if (v.next && this._cellDatas.hasOwnProperty(v.next)) {
+                    cellData.next = this._cellDatas[v.next];
+                }
+                if (v.top && this._cellDatas.hasOwnProperty(v.top)) {
+                    cellData.top = this._cellDatas[v.top];
+                }
+                if (v.bottom && this._cellDatas.hasOwnProperty(v.bottom)) {
+                    cellData.bottom = this._cellDatas[v.bottom];
+                }
+                if (v.left && this._cellDatas.hasOwnProperty(v.left)) {
+                    cellData.left = this._cellDatas[v.left];
+                }
+                if (v.right && this._cellDatas.hasOwnProperty(v.right)) {
+                    cellData.right = this._cellDatas[v.right];
+                }
+            }
+        },
+
+        getCellDataById: function (id) {
+            if (this._cellDatas.hasOwnProperty(id)) {
+                return this._cellDatas[id];
+            }
+            return null;
+        },
+
+        generateCellData: function (position) {
+            var cellData = new CellData();
+            cellData._position = position;
+            return cellData;
+        },
+    },
+
     properties: {
-        mapData: null,
+        id: {
+            get: function () {
+                if (this._position) {
+                    return this._position.x + "_" + this._position.y;
+                }
+
+                return "";
+            }
+        },
+        position: {
+            get: function () {
+                return this._position.add(cc.v2(0.5, 0.5)).mul(CellData.size);
+            }
+        },
         current: {
             default: null,
             type: Cell
@@ -143,11 +208,7 @@ var CellData = cc.Class({
         right: {
             default: null,
             type: CellData
-        }
-    },
-
-    getPosition: function () {
-        return cc.v2(this.mapData.x + 0.5, this.mapData.y + 0.5).mulSelf(68);
+        },
     },
 
     leftSum: function (ct) {
