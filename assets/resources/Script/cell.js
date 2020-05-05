@@ -98,9 +98,10 @@ var Cell = cc.Class({
 
     move: function (cellDatas, callback) {
         var tween = cc.tween(this.node);
-        cellDatas.forEach(cd => {
-            tween.to(0.2, { position: cd.position })
-        });
+        for (let index = 0; index < cellDatas.length; index++) {
+            const cd = cellDatas[index];
+            tween.to(1, { position: cd.position });
+        }
         tween.call(() => {
             callback(this);
         }).start()
@@ -134,7 +135,7 @@ var CellData = cc.Class({
             //生成所有cell data
             for (const k in mapData) {
                 var v = mapData[k];
-                CellData.generateCellData(cc.v2(v.x, v.y, 0), v.type);
+                CellData.generateCellData(cc.v3(v.x, v.y, 0), v.type);
             }
 
             //创建各个cell data关联关系
@@ -195,7 +196,7 @@ var CellData = cc.Class({
         },
         position: {
             get: function () {
-                return this._position.add(cc.v2(0.5, 0.5)).mul(CellData.size);
+                return this._position.add(cc.v3(0.5, 0.5, 0)).mul(CellData.size);
             }
         },
         type: 0,
@@ -292,7 +293,7 @@ var CellData = cc.Class({
     findBorn: function () {
         if (this.born) {
             return this.born.findBorn();
-        }else{
+        } else {
             if (this.last) {
                 if (this.last.current) {
                     return this.last.findBorn();
@@ -300,7 +301,8 @@ var CellData = cc.Class({
                     return this;
                 }
             } else {
-                var lastCellData = CellData.generateCellData(this._position.sub(cc.v3(0, 0, -1)), CELL_TYPE_BORN);
+                var lastCellData = CellData.generateCellData(this._position.sub(cc.v3(0, 0, 1)), CELL_TYPE_BORN);
+                lastCellData.next = this;
                 this.last = lastCellData;
                 return this;
             }

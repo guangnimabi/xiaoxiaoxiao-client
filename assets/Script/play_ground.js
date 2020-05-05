@@ -115,15 +115,17 @@ cc.Class({
                 }
             };
 
-            var moveCell = function(currentCell) {
+            var moveCell = function (currentCell) {
                 var moveCellDatas = currentCell.cellData.allMoveCellDatas();
+                cc.log("aaaaaaaaaaaaaaaaa");
+                cc.log(moveCellDatas);
                 if (moveCellDatas.length > 0) {
                     allCells.push(currentCell);
                     var targetCellData = moveCellDatas[moveCellDatas.length - 1];
 
                     currentCell.cellData.current = null;
-                    targetCellData.current = currentCell;
                     currentCell.cellData = targetCellData;
+                    currentCell.cellData.current = currentCell;
 
                     currentCell.move(moveCellDatas, callback);
                 }
@@ -131,24 +133,27 @@ cc.Class({
 
             //处理消除的cell
             var clearCellDatas = [];
-            renewCells.forEach(renewCell => {
+            for (let index = 0; index < renewCells.length; index++) {
+                var renewCell = renewCells[index];
+
                 clearCellDatas.push(renewCell.cellData);
 
                 var bornCellData = renewCell.cellData.findBorn();
 
                 renewCell.cellData.current = null;
 
-                bornCellData.current = renewCell;
                 renewCell.cellData = bornCellData;
-            });
+                renewCell.cellData.current = renewCell;
+            }
 
             //计算现有的cell移动
-            clearCellDatas.forEach(clearCellData => {
+            for (let index = 0; index < clearCellDatas.length; index++) {
+                const clearCellData = clearCellDatas[index];
                 var lastCells = clearCellData.allLastCells();
                 lastCells.forEach(lastCell => {
                     moveCell(lastCell);
                 });
-            });
+            }
 
             //计算消除的cell移动
             renewCells.forEach(renewCell => {
