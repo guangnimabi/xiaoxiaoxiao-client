@@ -23,33 +23,10 @@ var Cell = cc.Class({
 
     onLoad() {
         this.label.string = this.cellData.id;
-        this.node.position = this.cellData.position;
 
         do {
-            this.cellType = Math.floor(Math.random() * (4 - 0) + 0);
+            this.renew();
         } while (this.lineSum().length >= 3);
-
-        switch (this.cellType) {
-            case 0:
-                this.node.color = cc.Color.RED;
-                break;
-            case 1:
-                this.node.color = cc.Color.GREEN;
-                break;
-            case 2:
-                this.node.color = cc.Color.BLUE;
-                break;
-            case 3:
-                this.node.color = cc.Color.YELLOW;
-                break;
-            case 4:
-                this.node.color = cc.Color.MAGENTA;
-                break;
-            default:
-                this.node.color = cc.Color.CYAN;
-                break;
-        }
-
     },
 
     start() {
@@ -65,11 +42,21 @@ var Cell = cc.Class({
 
         var ySum = this.cellData.topSum(ct).concat(this.cellData.bottomSum(ct));
 
-        if (xSum.length >= 2 || ySum.length >= 2) {
-            return xSum.concat([this]).concat(ySum);
-        } else {
-            return [];
+        var result = [];
+
+        if (xSum.length >= 2) {
+            result = result.concat(xSum);
         }
+
+        if (ySum.length >= 2) {
+            result = result.concat(ySum);
+        }
+
+        if (result.length >= 2) {
+            result.push(this);
+        }
+
+        return result;
     },
 
     exchange: function (direction) {
@@ -100,7 +87,7 @@ var Cell = cc.Class({
         var tween = cc.tween(this.node);
         for (let index = 0; index < cellDatas.length; index++) {
             const cd = cellDatas[index];
-            tween.to(1, { position: cd.position });
+            tween.to(0.2, { position: cd.position });
         }
         tween.call(() => {
             callback(this);
@@ -119,6 +106,29 @@ var Cell = cc.Class({
     renew: function () {
         this.node.scale = 1;
         this.node.position = this.cellData.position;
+
+        this.cellType = Math.floor(Math.random() * (4 - 0) + 0);
+
+        switch (this.cellType) {
+            case 0:
+                this.node.color = cc.Color.RED;
+                break;
+            case 1:
+                this.node.color = cc.Color.GREEN;
+                break;
+            case 2:
+                this.node.color = cc.Color.BLUE;
+                break;
+            case 3:
+                this.node.color = cc.Color.YELLOW;
+                break;
+            case 4:
+                this.node.color = cc.Color.MAGENTA;
+                break;
+            default:
+                this.node.color = cc.Color.CYAN;
+                break;
+        }
     },
 });
 
@@ -294,16 +304,14 @@ var CellData = cc.Class({
         if (this.born) {
             return this.born.findBorn();
         } else {
-            if (this.last) {
-                if (this.last.current) {
-                    return this.last.findBorn();
-                } else {
-                    return this;
-                }
+            if (this.current) {
+                return this.last.findBorn();
             } else {
-                var lastCellData = CellData.generateCellData(this._position.sub(cc.v3(0, 0, 1)), CELL_TYPE_BORN);
-                lastCellData.next = this;
-                this.last = lastCellData;
+                if (!this.last) {
+                    var lastCellData = CellData.generateCellData(this._position.sub(cc.v3(0, 0, 1)), CELL_TYPE_BORN);
+                    lastCellData.next = this;
+                    this.last = lastCellData;
+                }
                 return this;
             }
         }

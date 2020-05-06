@@ -49,7 +49,15 @@ cc.Class({
                 }
 
                 if (allCells.length === 0) {
-                    var disappearCells = cell1.lineSum().concat(cell2.lineSum());
+                    var disappearCells = cell1.lineSum();
+                    var cell2LineSum = cell2.lineSum();
+                    for (let i = 0; i < cell2LineSum.length; i++) {
+                        const element = cell2LineSum[i];
+                        if (disappearCells.indexOf(element) === -1) {
+                            disappearCells.push(element);
+                        }
+                    }
+
                     if (disappearCells.length === 0) {
                         my_event.dispatchExchangeRollbackEvent(cell1, cell2);
                     } else {
@@ -104,21 +112,38 @@ cc.Class({
         });
         my_event.registRenewEvent(function (renewCells) {
             var allCells = [];
+            var checkCells = [];
             var callback = function (cell) {
+                checkCells.push(cell);
                 var index = allCells.indexOf(cell);
                 if (index > -1) {
                     allCells.splice(index, 1);
                 }
 
                 if (allCells.length === 0) {
-                    cc.log("renew success");
+                    var disappearCells = [];
+
+                    for (let i = 0; i < checkCells.length; i++) {
+                        const checkCell = checkCells[i];
+                        var cellLineSum = checkCell.lineSum();
+                        for (let j = 0; j < cellLineSum.length; j++) {
+                            const element = cellLineSum[j];
+                            if (disappearCells.indexOf(element) === -1) {
+                                disappearCells.push(element);
+                            }
+                        }
+                    }
+
+                    if (disappearCells.length === 0) {
+
+                    } else {
+                        my_event.dispatchDisappearEvent(disappearCells);
+                    }
                 }
             };
 
             var moveCell = function (currentCell) {
                 var moveCellDatas = currentCell.cellData.allMoveCellDatas();
-                cc.log("aaaaaaaaaaaaaaaaa");
-                cc.log(moveCellDatas);
                 if (moveCellDatas.length > 0) {
                     allCells.push(currentCell);
                     var targetCellData = moveCellDatas[moveCellDatas.length - 1];
