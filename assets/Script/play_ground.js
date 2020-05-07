@@ -68,6 +68,8 @@ cc.Class({
 
             cell1.move([cell1.cellData], callback);
             cell2.move([cell2.cellData], callback);
+
+            my_event.dispatchOperateEvent(false);
         });
         my_event.registExchangeRollbackEvent(function (cell1, cell2) {
             var tmpCellData = cell1.cellData;
@@ -85,8 +87,7 @@ cc.Class({
                 }
 
                 if (allCells.length === 0) {
-                    //打开控制面板
-                    cc.log("rollback success");
+                    my_event.dispatchOperateEvent(true);
                 }
             };
 
@@ -135,7 +136,7 @@ cc.Class({
                     }
 
                     if (disappearCells.length === 0) {
-
+                        my_event.dispatchOperateEvent(true);
                     } else {
                         my_event.dispatchDisappearEvent(disappearCells);
                     }

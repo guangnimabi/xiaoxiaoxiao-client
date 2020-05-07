@@ -31,9 +31,16 @@ module.exports = cc.Class({
                 self._lastTouch = new cc.v2();
                 self._lastlastTouch = new cc.v2();
 
-                cc.log(position.x + "," + position.y + "     " + direction.x + ","+direction.y)
                 eventHandler(position, direction);
             });
+        },
+
+        dispatchOperateEvent: function (open) {
+            if (open) {
+                this.receiver.resumeSystemEvents();
+            } else {
+                this.receiver.pauseSystemEvents();
+            }
         },
 
         //交换事件
