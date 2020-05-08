@@ -22,6 +22,8 @@ var Cell = cc.Class({
     // LIFE-CYCLE CALLBACKS:
 
     onLoad() {
+        this.node.width = CellData.size - 4;
+        this.node.height = CellData.size - 4;
         this.label.string = this.cellData.id;
 
         do {

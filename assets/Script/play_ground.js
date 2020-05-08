@@ -17,12 +17,22 @@ cc.Class({
             default: null,
             type: cc.Node,
         },
+        root: {
+            default: null,
+            type: cc.Node,
+        },
     },
 
     // LIFE-CYCLE CALLBACKS:
 
     onLoad() {
         var self = this;
+
+        if (self.root.width > self.root.height) {
+            CellData.size = Math.floor((self.root.height - 8) / 8);
+        } else {
+            CellData.size = Math.floor((self.root.width - 8) / 8);
+        }
 
         //regist touch event
         my_event.receiver = self.content;
@@ -214,5 +224,7 @@ cc.Class({
 
     },
 
-    // update (dt) {},
+    update(dt) {
+
+    },
 });
