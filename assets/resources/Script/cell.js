@@ -6,6 +6,7 @@
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
 var my_event = require("my_event");
+var random_util = require("random_util")
 
 const CELL_TYPE_COMMON = 0;
 const CELL_TYPE_BORN = 1;
@@ -25,10 +26,6 @@ var Cell = cc.Class({
         this.node.width = CellData.size - 4;
         this.node.height = CellData.size - 4;
         this.label.string = this.cellData.id;
-
-        do {
-            this.renew();
-        } while (this.lineSum().length >= 3);
     },
 
     start() {
@@ -37,6 +34,7 @@ var Cell = cc.Class({
 
     // update (dt) {},
 
+    //返回横竖直线统计连续的cellData
     lineSum: function () {
         var ct = this.cellType;
 
@@ -46,19 +44,82 @@ var Cell = cc.Class({
 
         var result = [];
 
-        if (xSum.length >= 2) {
+        if (xSum.length >= CellData.lineLimit - 1) {
             result = result.concat(xSum);
         }
 
-        if (ySum.length >= 2) {
+        if (ySum.length >= CellData.lineLimit - 1) {
             result = result.concat(ySum);
         }
 
-        if (result.length >= 2) {
+        if (result.length >= CellData.lineLimit - 1) {
             result.push(this);
         }
 
         return result;
+    },
+
+    //返回尝试移动后能横竖成行的cell
+    tryMoveCell: function () {
+        var ct = this.cellType;
+        var indexs = ["top", "bottom", "left", "right"];
+        random_util.randomArray(indexs);
+        for (let index = 0; index < indexs.length; index++) {
+            const direction = indexs[index];
+            switch (direction) {
+                case "top":
+                    if (this.cellData.top) {
+                        var sum = this.cellData.top.topSum(ct);
+                        if (sum.length >= CellData.lineLimit - 1) {
+                            return this.cellData.top.current;
+                        }
+                        sum = this.cellData.top.leftSum(ct).concat(this.cellData.top.rightSum(ct));
+                        if (sum.length >= CellData.lineLimit - 1) {
+                            return this.cellData.top.current;
+                        }
+                    }
+                    break;
+                case "bottom":
+                    if (this.cellData.bottom) {
+                        var sum = this.cellData.bottom.bottomSum(ct);
+                        if (sum.length >= CellData.lineLimit - 1) {
+                            return this.cellData.bottom.current;
+                        }
+                        sum = this.cellData.bottom.leftSum(ct).concat(this.cellData.bottom.rightSum(ct));
+                        if (sum.length >= CellData.lineLimit - 1) {
+                            return this.cellData.bottom.current;
+                        }
+                    }
+                    break;
+                case "left":
+                    if (this.cellData.left) {
+                        var sum = this.cellData.left.leftSum(ct);
+                        if (sum.length >= CellData.lineLimit - 1) {
+                            return this.cellData.left.current;
+                        }
+                        sum = this.cellData.left.topSum(ct).concat(this.cellData.left.bottomSum(ct));
+                        if (sum.length >= CellData.lineLimit - 1) {
+                            return this.cellData.left.current;
+                        }
+                    }
+                    break;
+                case "right":
+                    if (this.cellData.right) {
+                        var sum = this.cellData.right.rightSum(ct);
+                        if (sum.length >= CellData.lineLimit - 1) {
+                            return this.cellData.right.current;
+                        }
+                        sum = this.cellData.right.topSum(ct).concat(this.cellData.right.bottomSum(ct));
+                        if (sum.length >= CellData.lineLimit - 1) {
+                            return this.cellData.right.current;
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        return null;
     },
 
     exchange: function (direction) {
@@ -109,7 +170,7 @@ var Cell = cc.Class({
         this.node.scale = 1;
         this.node.position = this.cellData.position;
 
-        this.cellType = Math.floor(Math.random() * (4 - 0) + 0);
+        this.cellType = random_util.randomInt(5);
 
         switch (this.cellType) {
             case 0:
@@ -127,8 +188,17 @@ var Cell = cc.Class({
             case 4:
                 this.node.color = cc.Color.MAGENTA;
                 break;
-            default:
+            case 5:
                 this.node.color = cc.Color.CYAN;
+                break;
+            case 6:
+                this.node.color = cc.Color.ORANGE;
+                break;
+            case 7:
+                this.node.color = cc.Color.WHITE;
+                break;
+            default:
+                this.node.color = cc.Color.BLACK;
                 break;
         }
     },
@@ -137,6 +207,7 @@ var Cell = cc.Class({
 var CellData = cc.Class({
     statics: {
         size: 68,
+        lineLimit: 3,
         _cellDatas: null,
 
         initByMapData: function (mapData) {
@@ -185,12 +256,23 @@ var CellData = cc.Class({
             return null;
         },
 
+        getAllCell: function () {
+            var allCells = [];
+            for (const id in this._cellDatas) {
+                const cellData = this._cellDatas[id];
+                if (cellData.current) {
+                    allCells.push(cellData.current);
+                }
+            }
+            return allCells;
+        },
+
         generateCellData: function (position, type) {
             var cellData = new CellData();
             cellData._position = position;
             cellData.type = type;
 
-            CellData._cellDatas[cellData.id] = cellData;
+            this._cellDatas[cellData.id] = cellData;
             return cellData;
         },
     },

@@ -145,8 +145,23 @@ cc.Class({
                         }
                     }
 
-                    if (disappearCells.length === 0) {
-                        my_event.dispatchOperateEvent(true);
+                    if (disappearCells.length === 0) {//renew完毕后没有横竖成行的，要判定还能不能消
+                        var canPlay = false;
+                        checkCells = CellData.getAllCell();
+                        for (let i = 0; i < checkCells.length; i++) {
+                            const checkCell = checkCells[i];
+                            var canMoveCell = checkCell.tryMoveCell();
+                            if (canMoveCell) {
+                                canPlay = true;
+                                break;
+                            }
+                        }
+
+                        if (canPlay) {
+                            my_event.dispatchOperateEvent(true);
+                        } else {
+                            my_event.dispatchDisappearEvent(checkCells);
+                        }
                     } else {
                         my_event.dispatchDisappearEvent(disappearCells);
                     }
@@ -205,6 +220,7 @@ cc.Class({
         //init cells
         cc.loader.loadRes("prefab/cell", function (err, prefab) {
 
+            var allCells = [];
             for (const id in mapData) {
                 var cellData = CellData.getCellDataById(id);
                 if (cellData && cellData.isCommon()) {
@@ -214,8 +230,29 @@ cc.Class({
                     cellData.current = cell;
                     cell.cellData = cellData;
 
+                    do {
+                        cell.renew();
+                    } while (cell.lineSum().length >= CellData.lineLimit);
+                    allCells.push(cell);
+
                     self.content.addChild(node);
                 }
+            }
+
+            var canPlay = false;
+            for (let i = 0; i < allCells.length; i++) {
+                const checkCell = allCells[i];
+                var canMoveCell = checkCell.tryMoveCell();
+                if (canMoveCell) {
+                    canPlay = true;
+                    break;
+                }
+            }
+
+            if (canPlay) {
+                my_event.dispatchOperateEvent(true);
+            } else {
+                my_event.dispatchDisappearEvent(allCells);
             }
         });
     },

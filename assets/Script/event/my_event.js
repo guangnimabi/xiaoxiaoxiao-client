@@ -33,6 +33,8 @@ module.exports = cc.Class({
 
                 eventHandler(position, direction);
             });
+
+            self.dispatchOperateEvent(false);
         },
 
         dispatchOperateEvent: function (open) {
