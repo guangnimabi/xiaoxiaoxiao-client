@@ -47,51 +47,51 @@ module.exports = cc.Class({
 
         //交换事件
         registExchangeEvent: function (eventHandler) {
-            this.receiver.on(EVENT_EXCHANGE, function (cell1, cell2) {
-                eventHandler(cell1, cell2);
+            this.receiver.on(EVENT_EXCHANGE, function (stone1, stone2) {
+                eventHandler(stone1, stone2);
             });
         },
 
-        dispatchExchangeEvent: function (cell1, cell2) {
-            this.receiver.emit(EVENT_EXCHANGE, cell1, cell2);
+        dispatchExchangeEvent: function (stone1, stone2) {
+            this.receiver.emit(EVENT_EXCHANGE, stone1, stone2);
         },
 
         //交换回退事件
         registExchangeRollbackEvent: function (eventHandler) {
-            this.receiver.on(EVENT_EXCHANGE_ROLLBACK, function (cell1, cell2) {
-                eventHandler(cell1, cell2);
+            this.receiver.on(EVENT_EXCHANGE_ROLLBACK, function (stone1, stone2) {
+                eventHandler(stone1, stone2);
             });
         },
 
-        dispatchExchangeRollbackEvent: function (cell1, cell2) {
-            this.receiver.emit(EVENT_EXCHANGE_ROLLBACK, cell1, cell2);
+        dispatchExchangeRollbackEvent: function (stone1, stone2) {
+            this.receiver.emit(EVENT_EXCHANGE_ROLLBACK, stone1, stone2);
         },
 
         //消失事件
         registDisappearEvent: function (eventHandler) {
             this.receiver.on(EVENT_DISAPPEAR, function (event) {
-                var disappearCells = event.getUserData();
-                eventHandler(disappearCells);
+                var disappearStones = event.getUserData();
+                eventHandler(disappearStones);
             });
         },
 
-        dispatchDisappearEvent: function (disappearCells) {
+        dispatchDisappearEvent: function (disappearStones) {
             var event = new cc.Event.EventCustom(EVENT_DISAPPEAR, false);
-            event.setUserData(disappearCells);
+            event.setUserData(disappearStones);
             this.receiver.dispatchEvent(event);
         },
 
         //重建事件
         registRenewEvent: function (eventHandler) {
             this.receiver.on(EVENT_RENEW, function (event) {
-                var renewCells = event.getUserData();
-                eventHandler(renewCells);
+                var renewStones = event.getUserData();
+                eventHandler(renewStones);
             });
         },
 
-        dispatchRenewEvent: function (renewCells) {
+        dispatchRenewEvent: function (renewStones) {
             var event = new cc.Event.EventCustom(EVENT_RENEW, false);
-            event.setUserData(renewCells);
+            event.setUserData(renewStones);
             this.receiver.dispatchEvent(event);
         },
     }

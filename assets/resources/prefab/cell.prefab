@@ -220,14 +220,14 @@
     "_id": ""
   },
   {
-    "__type__": "cefdaeobWJNr7eSQvDZy1bS",
+    "__type__": "d5c72Tm7YlKc4KGOakXaoXz",
     "_name": "",
     "_objFlags": 0,
     "node": {
       "__id__": 1
     },
     "_enabled": true,
-    "cellType": -1,
+    "type": -1,
     "label": {
       "__id__": 3
     },
