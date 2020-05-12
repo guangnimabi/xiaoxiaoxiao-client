@@ -67,11 +67,11 @@ var Stone = cc.Class({
                     if (this.cell.top) {
                         var sum = this.cell.top.topSum(ct);
                         if (sum.length >= Cell.lineLimit - 1) {
-                            return this.cell.top.current;
+                            return this.cell.top.stone;
                         }
                         sum = this.cell.top.leftSum(ct).concat(this.cell.top.rightSum(ct));
                         if (sum.length >= Cell.lineLimit - 1) {
-                            return this.cell.top.current;
+                            return this.cell.top.stone;
                         }
                     }
                     break;
@@ -79,11 +79,11 @@ var Stone = cc.Class({
                     if (this.cell.bottom) {
                         var sum = this.cell.bottom.bottomSum(ct);
                         if (sum.length >= Cell.lineLimit - 1) {
-                            return this.cell.bottom.current;
+                            return this.cell.bottom.stone;
                         }
                         sum = this.cell.bottom.leftSum(ct).concat(this.cell.bottom.rightSum(ct));
                         if (sum.length >= Cell.lineLimit - 1) {
-                            return this.cell.bottom.current;
+                            return this.cell.bottom.stone;
                         }
                     }
                     break;
@@ -91,11 +91,11 @@ var Stone = cc.Class({
                     if (this.cell.left) {
                         var sum = this.cell.left.leftSum(ct);
                         if (sum.length >= Cell.lineLimit - 1) {
-                            return this.cell.left.current;
+                            return this.cell.left.stone;
                         }
                         sum = this.cell.left.topSum(ct).concat(this.cell.left.bottomSum(ct));
                         if (sum.length >= Cell.lineLimit - 1) {
-                            return this.cell.left.current;
+                            return this.cell.left.stone;
                         }
                     }
                     break;
@@ -103,11 +103,11 @@ var Stone = cc.Class({
                     if (this.cell.right) {
                         var sum = this.cell.right.rightSum(ct);
                         if (sum.length >= Cell.lineLimit - 1) {
-                            return this.cell.right.current;
+                            return this.cell.right.stone;
                         }
                         sum = this.cell.right.topSum(ct).concat(this.cell.right.bottomSum(ct));
                         if (sum.length >= Cell.lineLimit - 1) {
-                            return this.cell.right.current;
+                            return this.cell.right.stone;
                         }
                     }
                     break;
@@ -118,30 +118,32 @@ var Stone = cc.Class({
         return null;
     },
 
+    //往direction方向交换
     exchange: function (direction) {
         if (Math.abs(direction.x) > Math.abs(direction.y)) {
             if (direction.x > 0) {
                 if (this.cell.right) {
-                    my_event.dispatchExchangeEvent(this, this.cell.right.current);
+                    my_event.dispatchExchangeEvent(this, this.cell.right.stone);
                 }
             } else {
                 if (this.cell.left) {
-                    my_event.dispatchExchangeEvent(this, this.cell.left.current);
+                    my_event.dispatchExchangeEvent(this, this.cell.left.stone);
                 }
             }
         } else {
             if (direction.y > 0) {
                 if (this.cell.top) {
-                    my_event.dispatchExchangeEvent(this, this.cell.top.current);
+                    my_event.dispatchExchangeEvent(this, this.cell.top.stone);
                 }
             } else {
                 if (this.cell.bottom) {
-                    my_event.dispatchExchangeEvent(this, this.cell.bottom.current);
+                    my_event.dispatchExchangeEvent(this, this.cell.bottom.stone);
                 }
             }
         }
     },
 
+    //move动作：stone移动多个cell后回调callback
     move: function (cells, callback) {
         var tween = cc.tween(this.node);
         for (let index = 0; index < cells.length; index++) {
@@ -153,6 +155,7 @@ var Stone = cc.Class({
         }).start()
     },
 
+    //消除动作：消除后回调callback
     disappear: function (callback) {
         cc.tween(this.node)
             .to(0.2, { scale: 0 })

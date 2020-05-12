@@ -4,7 +4,7 @@ const CELL_TYPE_BORN = 1;
 var Cell = cc.Class({
     statics: {
         size: 68,
-        lineLimit: 5,
+        lineLimit: 3,
         _cells: null, //{cellId:{cell}}
 
         initByMapData: function (mapData) {
@@ -53,15 +53,15 @@ var Cell = cc.Class({
             return null;
         },
 
-        getAllCellContent: function () {
-            var allCellContents = [];
+        getAllStones: function () {
+            var allStones = [];
             for (const id in this._cells) {
                 const cell = this._cells[id];
-                if (cell.current) {
-                    allCellContents.push(cell.current);
+                if (cell.stone) {
+                    allStones.push(cell.stone);
                 }
             }
-            return allCellContents;
+            return allStones;
         },
 
         generateCell: function (position, type) {
@@ -75,6 +75,8 @@ var Cell = cc.Class({
     },
 
     properties: {
+        type: 0,
+        stone: null,
         _position: cc.Vec3,
         id: {
             get: function () {
@@ -90,8 +92,6 @@ var Cell = cc.Class({
                 return this._position.add(cc.v3(0.5, 0.5, 0)).mul(Cell.size);
             }
         },
-        type: 0,
-        current: null,
         last: {
             default: null,
             type: Cell
@@ -127,44 +127,44 @@ var Cell = cc.Class({
     },
 
     leftSum: function (ct) {
-        if (this.left && this.left.current && this.left.current.type === ct) {
-            return [this.left.current].concat(this.left.leftSum(ct));
+        if (this.left && this.left.stone && this.left.stone.type === ct) {
+            return [this.left.stone].concat(this.left.leftSum(ct));
         }
 
         return [];
     },
 
     rightSum: function (ct) {
-        if (this.right && this.right.current && this.right.current.type === ct) {
-            return [this.right.current].concat(this.right.rightSum(ct));
+        if (this.right && this.right.stone && this.right.stone.type === ct) {
+            return [this.right.stone].concat(this.right.rightSum(ct));
         }
 
         return [];
     },
 
     topSum: function (ct) {
-        if (this.top && this.top.current && this.top.current.type === ct) {
-            return [this.top.current].concat(this.top.topSum(ct));
+        if (this.top && this.top.stone && this.top.stone.type === ct) {
+            return [this.top.stone].concat(this.top.topSum(ct));
         }
 
         return [];
     },
 
     bottomSum: function (ct) {
-        if (this.bottom && this.bottom.current && this.bottom.current.type === ct) {
-            return [this.bottom.current].concat(this.bottom.bottomSum(ct));
+        if (this.bottom && this.bottom.stone && this.bottom.stone.type === ct) {
+            return [this.bottom.stone].concat(this.bottom.bottomSum(ct));
         }
 
         return [];
     },
 
-    //返回当前cell之前的所有content
-    allLastContent: function () {
+    //返回当前cell之前的所有stone
+    allLastStones: function () {
         if (this.last) {
-            if (this.last.current) {
-                return [this.last.current].concat(this.last.allLastContent());
+            if (this.last.stone) {
+                return [this.last.stone].concat(this.last.allLastStones());
             } else {
-                return this.last.allLastContent();
+                return this.last.allLastStones();
             }
         } else {
             return [];
@@ -173,7 +173,7 @@ var Cell = cc.Class({
 
     //返回当前cell之后可移动的空闲cell
     allMoveCell: function () {
-        if (this.next && !this.next.current) {
+        if (this.next && !this.next.stone) {
             return [this.next].concat(this.next.allMoveCell());
         } else {
             return [];
@@ -185,7 +185,7 @@ var Cell = cc.Class({
         if (this.born) {
             return this.born.findBorn();
         } else {
-            if (this.current) {
+            if (this.stone) {
                 return this.last.findBorn();
             } else {
                 if (!this.last) {

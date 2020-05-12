@@ -39,17 +39,17 @@ cc.Class({
         my_event.registOperateEvent(function (position, direction) {
             var id = "" + Math.floor(position.x / Cell.size) + "_" + Math.floor(position.y / Cell.size) + "_0";
             var cell = Cell.getCellById(id);
-            if (cell && cell.current) {
-                cell.current.exchange(direction);
+            if (cell && cell.stone) {
+                cell.stone.exchange(direction);
             }
         });
         my_event.registExchangeEvent(function (stone1, stone2) {
             var tmpCell = stone1.cell;
 
             stone1.cell = stone2.cell;
-            stone1.cell.current = stone1;
+            stone1.cell.stone = stone1;
             stone2.cell = tmpCell;
-            stone2.cell.current = stone2;
+            stone2.cell.stone = stone2;
 
             var allStones = [stone1, stone2];
             var callback = function (stone) {
@@ -85,9 +85,9 @@ cc.Class({
             var tmpCell = stone1.cell;
 
             stone1.cell = stone2.cell;
-            stone1.cell.current = stone1;
+            stone1.cell.stone = stone1;
             stone2.cell = tmpCell;
-            stone2.cell.current = stone2;
+            stone2.cell.stone = stone2;
 
             var allStones = [stone1, stone2];
             var callback = function (stone) {
@@ -147,7 +147,7 @@ cc.Class({
 
                     if (disappearStones.length === 0) {//renew完毕后没有横竖成行的，要判定还能不能消
                         var canPlay = false;
-                        checkStones = Cell.getAllCellContent();
+                        checkStones = Cell.getAllStones();
                         for (let i = 0; i < checkStones.length; i++) {
                             const checkStone = checkStones[i];
                             var canMoveStone = checkStone.tryMoveStone();
@@ -168,17 +168,17 @@ cc.Class({
                 }
             };
 
-            var moveStone = function (currentStone) {
-                var moveCells = currentStone.cell.allMoveCell();
+            var moveStone = function (stoneStone) {
+                var moveCells = stoneStone.cell.allMoveCell();
                 if (moveCells.length > 0) {
-                    allStones.push(currentStone);
+                    allStones.push(stoneStone);
                     var targetCell = moveCells[moveCells.length - 1];
 
-                    currentStone.cell.current = null;
-                    currentStone.cell = targetCell;
-                    currentStone.cell.current = currentStone;
+                    stoneStone.cell.stone = null;
+                    stoneStone.cell = targetCell;
+                    stoneStone.cell.stone = stoneStone;
 
-                    currentStone.move(moveCells, callback);
+                    stoneStone.move(moveCells, callback);
                 }
             };
 
@@ -191,16 +191,16 @@ cc.Class({
 
                 var bornCell = renewStone.cell.findBorn();
 
-                renewStone.cell.current = null;
+                renewStone.cell.stone = null;
 
                 renewStone.cell = bornCell;
-                renewStone.cell.current = renewStone;
+                renewStone.cell.stone = renewStone;
             }
 
             //计算现有的stone移动
             for (let index = 0; index < clearCells.length; index++) {
                 const clearCell = clearCells[index];
-                var lastStones = clearCell.allLastContent();
+                var lastStones = clearCell.allLastStones();
                 lastStones.forEach(lastStone => {
                     moveStone(lastStone);
                 });
@@ -227,7 +227,7 @@ cc.Class({
                     var node = cc.instantiate(prefab);
                     var stone = node.getComponent("stone");
 
-                    cell.current = stone;
+                    cell.stone = stone;
                     stone.cell = cell;
 
                     do {
