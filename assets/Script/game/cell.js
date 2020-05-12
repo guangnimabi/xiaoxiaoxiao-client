@@ -126,39 +126,58 @@ var Cell = cc.Class({
         return this.type === CELL_TYPE_COMMON;
     },
 
-    leftSum: function (ct) {
-        if (this.left && this.left.stone && this.left.stone.type === ct) {
-            return [this.left.stone].concat(this.left.leftSum(ct));
+    //返回除自身外，横竖直线统计连续的stone
+    lineSum: function (st) {
+        var xSum = this.leftSum(st).concat(this.rightSum(st));
+
+        var ySum = this.topSum(st).concat(this.bottomSum(st));
+
+        var result = [];
+
+        if (xSum.length >= Cell.lineLimit - 1) {
+            result = result.concat(xSum);
+        }
+
+        if (ySum.length >= Cell.lineLimit - 1) {
+            result = result.concat(ySum);
+        }
+
+        return result;
+    },
+
+    leftSum: function (st) {
+        if (this.left && this.left.stone && this.left.stone.type === st) {
+            return [this.left.stone].concat(this.left.leftSum(st));
         }
 
         return [];
     },
 
-    rightSum: function (ct) {
-        if (this.right && this.right.stone && this.right.stone.type === ct) {
-            return [this.right.stone].concat(this.right.rightSum(ct));
+    rightSum: function (st) {
+        if (this.right && this.right.stone && this.right.stone.type === st) {
+            return [this.right.stone].concat(this.right.rightSum(st));
         }
 
         return [];
     },
 
-    topSum: function (ct) {
-        if (this.top && this.top.stone && this.top.stone.type === ct) {
-            return [this.top.stone].concat(this.top.topSum(ct));
+    topSum: function (st) {
+        if (this.top && this.top.stone && this.top.stone.type === st) {
+            return [this.top.stone].concat(this.top.topSum(st));
         }
 
         return [];
     },
 
-    bottomSum: function (ct) {
-        if (this.bottom && this.bottom.stone && this.bottom.stone.type === ct) {
-            return [this.bottom.stone].concat(this.bottom.bottomSum(ct));
+    bottomSum: function (st) {
+        if (this.bottom && this.bottom.stone && this.bottom.stone.type === st) {
+            return [this.bottom.stone].concat(this.bottom.bottomSum(st));
         }
 
         return [];
     },
 
-    //返回当前cell之前的所有stone
+    //返回当前cell之前的所有content
     allLastStones: function () {
         if (this.last) {
             if (this.last.stone) {

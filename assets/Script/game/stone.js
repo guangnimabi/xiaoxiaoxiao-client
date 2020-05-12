@@ -1,6 +1,6 @@
-var my_event = require("my_event");
-var random_util = require("random_util")
-var Cell = require("cell")
+var Event = require("Event");
+var RandomUtil = require("RandomUtil")
+var Cell = require("Cell")
 
 var Stone = cc.Class({
     extends: cc.Component,
@@ -13,6 +13,7 @@ var Stone = cc.Class({
             serializable: false
         },
         type: -1,
+        level: 0,
         label: cc.Label
     }),
 
@@ -30,23 +31,9 @@ var Stone = cc.Class({
 
     // update (dt) {},
 
-    //返回横竖直线统计连续的cell
+    //返回横竖直线统计连续的stone
     lineSum: function () {
-        var ct = this.type;
-
-        var xSum = this.cell.leftSum(ct).concat(this.cell.rightSum(ct));
-
-        var ySum = this.cell.topSum(ct).concat(this.cell.bottomSum(ct));
-
-        var result = [];
-
-        if (xSum.length >= Cell.lineLimit - 1) {
-            result = result.concat(xSum);
-        }
-
-        if (ySum.length >= Cell.lineLimit - 1) {
-            result = result.concat(ySum);
-        }
+        var result = this.cell.lineSum(this.type);
 
         if (result.length >= Cell.lineLimit - 1) {
             result.push(this);
@@ -59,7 +46,7 @@ var Stone = cc.Class({
     tryMoveStone: function () {
         var ct = this.type;
         var indexs = ["top", "bottom", "left", "right"];
-        random_util.randomArray(indexs);
+        RandomUtil.randomArray(indexs);
         for (let index = 0; index < indexs.length; index++) {
             const direction = indexs[index];
             switch (direction) {
@@ -123,21 +110,21 @@ var Stone = cc.Class({
         if (Math.abs(direction.x) > Math.abs(direction.y)) {
             if (direction.x > 0) {
                 if (this.cell.right) {
-                    my_event.dispatchExchangeEvent(this, this.cell.right.stone);
+                    Event.dispatchExchangeEvent(this, this.cell.right.stone);
                 }
             } else {
                 if (this.cell.left) {
-                    my_event.dispatchExchangeEvent(this, this.cell.left.stone);
+                    Event.dispatchExchangeEvent(this, this.cell.left.stone);
                 }
             }
         } else {
             if (direction.y > 0) {
                 if (this.cell.top) {
-                    my_event.dispatchExchangeEvent(this, this.cell.top.stone);
+                    Event.dispatchExchangeEvent(this, this.cell.top.stone);
                 }
             } else {
                 if (this.cell.bottom) {
-                    my_event.dispatchExchangeEvent(this, this.cell.bottom.stone);
+                    Event.dispatchExchangeEvent(this, this.cell.bottom.stone);
                 }
             }
         }
@@ -165,11 +152,16 @@ var Stone = cc.Class({
             .start()
     },
 
+    refresh: function () {
+        this.node.scale = 1;
+        this.node.position = this.cell.position;
+    },
+
     renew: function () {
         this.node.scale = 1;
         this.node.position = this.cell.position;
 
-        this.type = random_util.randomInt(5);
+        this.type = RandomUtil.randomInt(5);
 
         switch (this.type) {
             case 0:

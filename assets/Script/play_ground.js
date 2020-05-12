@@ -5,9 +5,10 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
-var Map = require("map");
-var Cell = require("cell");
-var my_event = require("my_event");
+var Map = require("Map");
+var Cell = require("Cell");
+var Event = require("Event");
+var StoneFactory = require("StoneFactory");
 
 cc.Class({
     extends: cc.Component,
@@ -35,15 +36,15 @@ cc.Class({
         }
 
         //regist touch event
-        my_event.receiver = self.content;
-        my_event.registOperateEvent(function (position, direction) {
+        Event.receiver = self.content;
+        Event.registOperateEvent(function (position, direction) {
             var id = "" + Math.floor(position.x / Cell.size) + "_" + Math.floor(position.y / Cell.size) + "_0";
             var cell = Cell.getCellById(id);
             if (cell && cell.stone) {
                 cell.stone.exchange(direction);
             }
         });
-        my_event.registExchangeEvent(function (stone1, stone2) {
+        Event.registExchangeEvent(function (stone1, stone2) {
             var tmpCell = stone1.cell;
 
             stone1.cell = stone2.cell;
@@ -69,9 +70,9 @@ cc.Class({
                     }
 
                     if (disappearStones.length === 0) {
-                        my_event.dispatchExchangeRollbackEvent(stone1, stone2);
+                        Event.dispatchExchangeRollbackEvent(stone1, stone2);
                     } else {
-                        my_event.dispatchDisappearEvent(disappearStones);
+                        Event.dispatchDisappearEvent(disappearStones);
                     }
                 }
             }
@@ -79,9 +80,9 @@ cc.Class({
             stone1.move([stone1.cell], callback);
             stone2.move([stone2.cell], callback);
 
-            my_event.dispatchOperateEvent(false);
+            Event.dispatchOperateEvent(false);
         });
-        my_event.registExchangeRollbackEvent(function (stone1, stone2) {
+        Event.registExchangeRollbackEvent(function (stone1, stone2) {
             var tmpCell = stone1.cell;
 
             stone1.cell = stone2.cell;
@@ -97,14 +98,14 @@ cc.Class({
                 }
 
                 if (allStones.length === 0) {
-                    my_event.dispatchOperateEvent(true);
+                    Event.dispatchOperateEvent(true);
                 }
             };
 
             stone1.move([stone1.cell], callback);
             stone2.move([stone2.cell], callback);
         });
-        my_event.registDisappearEvent(function (disappearStones) {
+        Event.registDisappearEvent(function (disappearStones) {
             var renewStones = [].concat(disappearStones);
             var callback = function (stone) {
                 var index = disappearStones.indexOf(stone);
@@ -113,7 +114,7 @@ cc.Class({
                 }
 
                 if (disappearStones.length === 0) {
-                    my_event.dispatchRenewEvent(renewStones);
+                    Event.dispatchRenewEvent(renewStones);
                 }
             };
 
@@ -121,7 +122,7 @@ cc.Class({
                 stone.disappear(callback);
             });
         });
-        my_event.registRenewEvent(function (renewStones) {
+        Event.registRenewEvent(function (renewStones) {
             var allStones = [];
             var checkStones = [];
             var callback = function (stone) {
@@ -158,12 +159,12 @@ cc.Class({
                         }
 
                         if (canPlay) {
-                            my_event.dispatchOperateEvent(true);
+                            Event.dispatchOperateEvent(true);
                         } else {
-                            my_event.dispatchDisappearEvent(checkStones);
+                            Event.dispatchDisappearEvent(checkStones);
                         }
                     } else {
-                        my_event.dispatchDisappearEvent(disappearStones);
+                        Event.dispatchDisappearEvent(disappearStones);
                     }
                 }
             };
@@ -218,24 +219,32 @@ cc.Class({
         Cell.initByMapData(mapData);
 
         //init stones
-        cc.loader.loadRes("prefab/cell", function (err, prefab) {
+        cc.loader.loadResDir("prefab/stone", function (err, prefabs) {
+
+            for (let i = 0; i < prefabs.length; i++) {
+                const prefab = prefabs[i];
+                StoneFactory.addStonePrefab(prefab);
+            }
 
             var allStones = [];
             for (const id in mapData) {
                 var cell = Cell.getCellById(id);
+
                 if (cell && cell.isCommon()) {
-                    var node = cc.instantiate(prefab);
-                    var stone = node.getComponent("stone");
+                    var st = StoneFactory.randomStoneType();
+                    while (cell.lineSum(st) >= Cell.lineLimit - 1) {
+                        st = StoneFactory.randomStoneType();
+                    }
+
+                    var stone = StoneFactory.getStone(st + '_0');
 
                     cell.stone = stone;
                     stone.cell = cell;
 
-                    do {
-                        stone.renew();
-                    } while (stone.lineSum().length >= Cell.lineLimit);
-                    allStones.push(stone);
+                    stone.refresh();
 
-                    self.content.addChild(node);
+                    allStones.push(stone);
+                    self.content.addChild(stone.node);
                 }
             }
 
@@ -250,9 +259,9 @@ cc.Class({
             }
 
             if (canPlay) {
-                my_event.dispatchOperateEvent(true);
+                Event.dispatchOperateEvent(true);
             } else {
-                my_event.dispatchDisappearEvent(allStones);
+                Event.dispatchDisappearEvent(allStones);
             }
         });
     },
