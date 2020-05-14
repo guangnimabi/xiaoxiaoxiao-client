@@ -133,15 +133,43 @@ cc.Class({
                 }
 
                 if (allStones.length === 0) {
-                    var disappearStones = [];
+                    let seedStones = [];
+                    var seedLinkStones = [];
 
                     for (let i = 0; i < checkStones.length; i++) {
-                        const checkStone = checkStones[i];
-                        var stoneLineSum = checkStone.lineSum();
-                        for (let j = 0; j < stoneLineSum.length; j++) {
-                            const element = stoneLineSum[j];
-                            if (disappearStones.indexOf(element) === -1) {
-                                disappearStones.push(element);
+                        const cStone = checkStones[i];
+                        var cStoneLineSum = cStone.lineSum();
+
+                        var deleteSeeds = [];
+                        var canAddSeed = true;
+
+                        for (let j = 0; j < seedLinkStones.length; j++) {
+                            const linkStones = seedLinkStones[j];
+                            if (linkStones.indexOf(cStone) != -1) {
+                                if (linkStones.length >= cStoneLineSum.length) {
+                                    canAddSeed = false;
+                                } else {
+                                    deleteSeeds.push(j);
+                                }
+                            }
+                        }
+                        for (let j = 0; j < deleteSeeds.length; j++) {
+                            seedStones.splice(deleteSeeds[j], 1);
+                            seedLinkStones.splice(deleteSeeds[j], 1);
+                        }
+                        if (canAddSeed) {
+                            seedStones.push(cStone);
+                            seedLinkStones.push(cStoneLineSum);
+                        }
+                    }
+
+                    var disappearStones = [];
+                    for (let i = 0; i < seedLinkStones.length; i++) {
+                        const linkStones = seedLinkStones[i];
+                        for (let j = 0; j < linkStones.length; j++) {
+                            const dStone = linkStones[j];
+                            if (disappearStones.indexOf(dStone) === -1) {
+                                disappearStones.push(dStone);
                             }
                         }
                     }
@@ -169,17 +197,17 @@ cc.Class({
                 }
             };
 
-            var moveStone = function (stoneStone) {
-                var moveCells = stoneStone.cell.allMoveCell();
+            var moveStone = function (stone) {
+                var moveCells = stone.cell.allMoveCell();
                 if (moveCells.length > 0) {
-                    allStones.push(stoneStone);
+                    allStones.push(stone);
                     var targetCell = moveCells[moveCells.length - 1];
 
-                    stoneStone.cell.stone = null;
-                    stoneStone.cell = targetCell;
-                    stoneStone.cell.stone = stoneStone;
+                    stone.cell.stone = null;
+                    stone.cell = targetCell;
+                    stone.cell.stone = stone;
 
-                    stoneStone.move(moveCells, callback);
+                    stone.move(moveCells, callback);
                 }
             };
 
@@ -232,7 +260,7 @@ cc.Class({
 
                 if (cell && cell.isCommon()) {
                     var st = StoneFactory.randomStoneType();
-                    while (cell.lineSum(st) >= Cell.lineLimit - 1) {
+                    while (cell.lineSum(st).length >= Cell.lineLimit - 1) {
                         st = StoneFactory.randomStoneType();
                     }
 
