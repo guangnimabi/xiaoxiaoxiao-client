@@ -33,50 +33,37 @@ module.exports = cc.Class({
 
         randomStoneType: function () {
             return RandomUtil.randomInt(5);
-
-            // switch (this.type) {
-            //     case 0:
-            //         this.node.color = cc.Color.RED;
-            //         break;
-            //     case 1:
-            //         this.node.color = cc.Color.GREEN;
-            //         break;
-            //     case 2:
-            //         this.node.color = cc.Color.BLUE;
-            //         break;
-            //     case 3:
-            //         this.node.color = cc.Color.YELLOW;
-            //         break;
-            //     case 4:
-            //         this.node.color = cc.Color.MAGENTA;
-            //         break;
-            //     case 5:
-            //         this.node.color = cc.Color.CYAN;
-            //         break;
-            //     case 6:
-            //         this.node.color = cc.Color.ORANGE;
-            //         break;
-            //     case 7:
-            //         this.node.color = cc.Color.WHITE;
-            //         break;
-            //     default:
-            //         this.node.color = cc.Color.BLACK;
-            //         break;
-            // }
         },
 
-        getStone: function (name) {
+        //在node中创建stone，置入cell
+        createStone: function (name, node, cell) {
             if (this._pools.hasOwnProperty(name)) {
-                return this._pools[name].getStone();
+                let stone = this._pools[name].getStone();
+
+                stone.cell = cell;
+                cell.stone = stone;
+
+                stone.refresh();
+
+                node.addChild(stone.node);
+
+                return stone;
             }
             return null;
         },
 
+        //回收stone，返回空cell
         recycleStone: function (stone) {
-            var name = stone.type + '_' + stone.level;
+            let cell = stone.cell;
+            cell.stone = null;
+            stone.cell = null;
+
+            let name = stone.type + '_' + stone.level;
             if (this._pools.hasOwnProperty(name)) {
                 this._pools[name].recycleStone(stone);
             }
+
+            return cell;
         },
     },
 });

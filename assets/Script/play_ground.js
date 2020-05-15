@@ -45,13 +45,6 @@ cc.Class({
             }
         });
         Event.registExchangeEvent(function (stone1, stone2) {
-            var tmpCell = stone1.cell;
-
-            stone1.cell = stone2.cell;
-            stone1.cell.stone = stone1;
-            stone2.cell = tmpCell;
-            stone2.cell.stone = stone2;
-
             var allStones = [stone1, stone2];
             var callback = function (stone) {
                 var index = allStones.indexOf(stone);
@@ -77,19 +70,15 @@ cc.Class({
                 }
             }
 
-            stone1.move([stone1.cell], callback);
-            stone2.move([stone2.cell], callback);
+            let cell1 = stone1.cell;
+            let cell2 = stone2.cell;
+
+            stone1.move([cell2], callback);
+            stone2.move([cell1], callback);
 
             Event.dispatchOperateEvent(false);
         });
         Event.registExchangeRollbackEvent(function (stone1, stone2) {
-            var tmpCell = stone1.cell;
-
-            stone1.cell = stone2.cell;
-            stone1.cell.stone = stone1;
-            stone2.cell = tmpCell;
-            stone2.cell.stone = stone2;
-
             var allStones = [stone1, stone2];
             var callback = function (stone) {
                 var index = allStones.indexOf(stone);
@@ -102,19 +91,19 @@ cc.Class({
                 }
             };
 
-            stone1.move([stone1.cell], callback);
-            stone2.move([stone2.cell], callback);
+            let cell1 = stone1.cell;
+            let cell2 = stone2.cell;
+
+            stone1.move([cell2], callback);
+            stone2.move([cell1], callback);
         });
         Event.registDisappearEvent(function (disappearStones) {
-            var renewStones = [].concat(disappearStones);
-            var callback = function (stone) {
-                var index = disappearStones.indexOf(stone);
-                if (index > -1) {
-                    disappearStones.splice(index, 1);
-                }
+            let emptyCells = [];
+            let callback = function (cell) {
+                emptyCells.push(cell);
 
-                if (disappearStones.length === 0) {
-                    Event.dispatchRenewEvent(renewStones);
+                if (emptyCells.length === disappearStones.length) {
+                    Event.dispatchRenewEvent(emptyCells);
                 }
             };
 
@@ -122,7 +111,7 @@ cc.Class({
                 stone.disappear(callback);
             });
         });
-        Event.registRenewEvent(function (renewStones) {
+        Event.registRenewEvent(function (emptyCells) {
             var allStones = [];
             var checkStones = [];
             var callback = function (stone) {
@@ -133,36 +122,40 @@ cc.Class({
                 }
 
                 if (allStones.length === 0) {
+                    //选取种子stone
                     let seedStones = [];
-                    var seedLinkStones = [];
+                    let seedLinkStones = [];
 
                     for (let i = 0; i < checkStones.length; i++) {
                         const cStone = checkStones[i];
                         var cStoneLineSum = cStone.lineSum();
 
-                        var deleteSeeds = [];
-                        var canAddSeed = true;
+                        if (cStoneLineSum.length>0) {
+                            var deleteSeeds = [];
+                            var canAddSeed = true;
 
-                        for (let j = 0; j < seedLinkStones.length; j++) {
-                            const linkStones = seedLinkStones[j];
-                            if (linkStones.indexOf(cStone) != -1) {
-                                if (linkStones.length >= cStoneLineSum.length) {
-                                    canAddSeed = false;
-                                } else {
-                                    deleteSeeds.push(j);
+                            for (let j = 0; j < seedLinkStones.length; j++) {
+                                const linkStones = seedLinkStones[j];
+                                if (linkStones.indexOf(cStone) != -1) {
+                                    if (linkStones.length >= cStoneLineSum.length) {
+                                        canAddSeed = false;
+                                    } else {
+                                        deleteSeeds.push(j);
+                                    }
                                 }
                             }
-                        }
-                        for (let j = 0; j < deleteSeeds.length; j++) {
-                            seedStones.splice(deleteSeeds[j], 1);
-                            seedLinkStones.splice(deleteSeeds[j], 1);
-                        }
-                        if (canAddSeed) {
-                            seedStones.push(cStone);
-                            seedLinkStones.push(cStoneLineSum);
+                            for (let j = 0; j < deleteSeeds.length; j++) {
+                                seedStones.splice(deleteSeeds[j], 1);
+                                seedLinkStones.splice(deleteSeeds[j], 1);
+                            }
+                            if (canAddSeed) {
+                                seedStones.push(cStone);
+                                seedLinkStones.push(cStoneLineSum);
+                            }
                         }
                     }
 
+                    //统计连消的stone
                     var disappearStones = [];
                     for (let i = 0; i < seedLinkStones.length; i++) {
                         const linkStones = seedLinkStones[i];
@@ -197,49 +190,26 @@ cc.Class({
                 }
             };
 
-            var moveStone = function (stone) {
-                var moveCells = stone.cell.allMoveCell();
-                if (moveCells.length > 0) {
-                    allStones.push(stone);
-                    var targetCell = moveCells[moveCells.length - 1];
-
-                    stone.cell.stone = null;
-                    stone.cell = targetCell;
-                    stone.cell.stone = stone;
-
-                    stone.move(moveCells, callback);
+            for (const emptyCell of emptyCells) {
+                //现有需要掉落的stone
+                for (const stone of emptyCell.allLastStones()) {
+                    if (allStones.indexOf(stone) === -1) {
+                        allStones.push(stone);
+                    }
                 }
-            };
 
-            //处理消除的stone
-            var clearCells = [];
-            for (let index = 0; index < renewStones.length; index++) {
-                var renewStone = renewStones[index];
-
-                clearCells.push(renewStone.cell);
-
-                var bornCell = renewStone.cell.findBorn();
-
-                renewStone.cell.stone = null;
-
-                renewStone.cell = bornCell;
-                renewStone.cell.stone = renewStone;
+                //新生成stone
+                let newStone = StoneFactory.createStone(StoneFactory.randomStoneType() + '_0', self.content, emptyCell.findBorn())
+                allStones.push(newStone);
             }
 
-            //计算现有的stone移动
-            for (let index = 0; index < clearCells.length; index++) {
-                const clearCell = clearCells[index];
-                var lastStones = clearCell.allLastStones();
-                lastStones.forEach(lastStone => {
-                    moveStone(lastStone);
-                });
+            for (const stone of allStones) {
+                stone.collectMoveCells();
             }
 
-            //计算消除的stone移动
-            renewStones.forEach(renewStone => {
-                renewStone.renew();
-                moveStone(renewStone);
-            });
+            for (const stone of allStones) {
+                stone.move([], callback);
+            }
         });
 
         //init map
@@ -254,32 +224,25 @@ cc.Class({
                 StoneFactory.addStonePrefab(prefab);
             }
 
-            var allStones = [];
+            let allStones = [];
             for (const id in mapData) {
-                var cell = Cell.getCellById(id);
+                let cell = Cell.getCellById(id);
 
                 if (cell && cell.isCommon()) {
-                    var st = StoneFactory.randomStoneType();
+                    let st = StoneFactory.randomStoneType();
                     while (cell.lineSum(st).length >= Cell.lineLimit - 1) {
                         st = StoneFactory.randomStoneType();
                     }
 
-                    var stone = StoneFactory.getStone(st + '_0');
-
-                    cell.stone = stone;
-                    stone.cell = cell;
-
-                    stone.refresh();
-
+                    let stone = StoneFactory.createStone(st + '_0', self.content, cell);
                     allStones.push(stone);
-                    self.content.addChild(stone.node);
                 }
             }
 
-            var canPlay = false;
+            let canPlay = false;
             for (let i = 0; i < allStones.length; i++) {
                 const checkStone = allStones[i];
-                var canMoveStone = checkStone.tryMoveStone();
+                let canMoveStone = checkStone.tryMoveStone();
                 if (canMoveStone) {
                     canPlay = true;
                     break;

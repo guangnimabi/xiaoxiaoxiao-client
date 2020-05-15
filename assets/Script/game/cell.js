@@ -190,13 +190,15 @@ var Cell = cc.Class({
         }
     },
 
-    //返回当前cell之后可移动的空闲cell
+    //返回当前cell之后可移动的cell
     allMoveCell: function () {
-        if (this.next && !this.next.stone) {
-            return [this.next].concat(this.next.allMoveCell());
-        } else {
-            return [];
+        let moveCells = [];
+        let currentCell = this;
+        for (let i = this.countNextEmpty(); i > 0; i--) {
+            moveCells.push(currentCell.next);
+            currentCell = currentCell.next;
         }
+        return moveCells;
     },
 
     //返回重新出生的cell
@@ -214,6 +216,19 @@ var Cell = cc.Class({
                 }
                 return this;
             }
+        }
+    },
+
+    //返回所有next的空cell个数(包含born cell)
+    countNextEmpty: function () {
+        if (this.next) {
+            if (this.next.stone) {
+                return 0 + this.next.countNextEmpty();
+            } else {
+                return 1 + this.next.countNextEmpty();
+            }
+        } else {
+            return 0;
         }
     },
 });

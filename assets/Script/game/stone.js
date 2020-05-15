@@ -1,6 +1,7 @@
 var Event = require("Event");
-var RandomUtil = require("RandomUtil")
-var Cell = require("Cell")
+var RandomUtil = require("RandomUtil");
+var Cell = require("Cell");
+var StoneFactory = require('StoneFactory');
 
 var Stone = cc.Class({
     extends: cc.Component,
@@ -14,7 +15,8 @@ var Stone = cc.Class({
         },
         type: -1,
         level: 0,
-        label: cc.Label
+        label: cc.Label,
+        _moveCells: [],
     }),
 
     // LIFE-CYCLE CALLBACKS:
@@ -130,24 +132,39 @@ var Stone = cc.Class({
         }
     },
 
+    collectMoveCells: function () {
+        this._moveCells = this.cell.allMoveCell();
+    },
+
     //move动作：stone移动多个cell后回调callback
     move: function (cells, callback) {
+        cells = cells.concat(this._moveCells);
+        this._moveCells = [];
+
+        let targetCell = cells[cells.length - 1];
+
+        if (!this.cell.isCommon()) {
+            this.cell.stone = null;
+        }
+        this.cell = targetCell;
+        targetCell.stone = this;
+
         var tween = cc.tween(this.node);
         for (let index = 0; index < cells.length; index++) {
             const cd = cells[index];
-            tween.to(0.2, { position: cd.position });
+            tween.to(0.2, {position: cd.position});
         }
         tween.call(() => {
             callback(this);
-        }).start()
+        }).start();
     },
 
-    //消除动作：消除后回调callback
+    //消除动作：消除后回调callback，返回空cell
     disappear: function (callback) {
         cc.tween(this.node)
-            .to(0.2, { scale: 0 })
+            .to(0.2, {scale: 0})
             .call(() => {
-                callback(this);
+                callback(StoneFactory.recycleStone(this));
             })
             .start()
     },
@@ -155,42 +172,5 @@ var Stone = cc.Class({
     refresh: function () {
         this.node.scale = 1;
         this.node.position = this.cell.position;
-    },
-
-    renew: function () {
-        this.node.scale = 1;
-        this.node.position = this.cell.position;
-
-        this.type = RandomUtil.randomInt(5);
-
-        switch (this.type) {
-            case 0:
-                this.node.color = cc.Color.RED;
-                break;
-            case 1:
-                this.node.color = cc.Color.GREEN;
-                break;
-            case 2:
-                this.node.color = cc.Color.BLUE;
-                break;
-            case 3:
-                this.node.color = cc.Color.YELLOW;
-                break;
-            case 4:
-                this.node.color = cc.Color.MAGENTA;
-                break;
-            case 5:
-                this.node.color = cc.Color.CYAN;
-                break;
-            case 6:
-                this.node.color = cc.Color.ORANGE;
-                break;
-            case 7:
-                this.node.color = cc.Color.WHITE;
-                break;
-            default:
-                this.node.color = cc.Color.BLACK;
-                break;
-        }
     },
 });
