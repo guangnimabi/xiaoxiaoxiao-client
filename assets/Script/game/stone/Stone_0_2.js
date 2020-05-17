@@ -10,7 +10,7 @@ cc.Class({
 
     ctor: function(){
         this.type = StoneFactory.STONE_TYPE_0;
-        this.level = 0;
+        this.level = 2;
     },
 
     // LIFE-CYCLE CALLBACKS:

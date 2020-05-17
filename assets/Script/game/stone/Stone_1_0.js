@@ -9,7 +9,7 @@ cc.Class({
     },
 
     ctor: function(){
-        this.type = StoneFactory.STONE_TYPE_0;
+        this.type = StoneFactory.STONE_TYPE_1;
         this.level = 0;
     },
 

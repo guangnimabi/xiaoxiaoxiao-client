@@ -198,6 +198,7 @@ var Cell = cc.Class({
             moveCells.push(currentCell.next);
             currentCell = currentCell.next;
         }
+        cc.log(moveCells);
         return moveCells;
     },
 
@@ -231,6 +232,10 @@ var Cell = cc.Class({
             return 0;
         }
     },
+
+    disappearStone: function() {
+
+    }
 });
 
 module.exports = Cell;

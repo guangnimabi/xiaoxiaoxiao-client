@@ -84,14 +84,14 @@ module.exports = cc.Class({
         //重建事件
         registRenewEvent: function (eventHandler) {
             this.receiver.on(EVENT_RENEW, function (event) {
-                let emptyCells = event.getUserData();
-                eventHandler(emptyCells);
+                let renewStones = event.getUserData();
+                eventHandler(renewStones);
             });
         },
 
-        dispatchRenewEvent: function (emptyCells) {
+        dispatchRenewEvent: function (renewStones) {
             let event = new cc.Event.EventCustom(EVENT_RENEW, false);
-            event.setUserData(emptyCells);
+            event.setUserData(renewStones);
             this.receiver.dispatchEvent(event);
         },
     }

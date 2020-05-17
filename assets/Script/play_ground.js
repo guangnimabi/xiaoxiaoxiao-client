@@ -37,6 +37,8 @@ cc.Class({
 
         //regist touch event
         Event.receiver = self.content;
+
+        //regist touch event
         Event.registOperateEvent(function (position, direction) {
             var id = "" + Math.floor(position.x / Cell.size) + "_" + Math.floor(position.y / Cell.size) + "_0";
             var cell = Cell.getCellById(id);
@@ -44,6 +46,8 @@ cc.Class({
                 cell.stone.exchange(direction);
             }
         });
+
+        //regist exchange event
         Event.registExchangeEvent(function (stone1, stone2) {
             var allStones = [stone1, stone2];
             var callback = function (stone) {
@@ -53,18 +57,27 @@ cc.Class({
                 }
 
                 if (allStones.length === 0) {
-                    var disappearStones = stone1.lineSum();
+                    var stone1LineSum = stone1.lineSum();
                     var stone2LineSum = stone2.lineSum();
-                    for (let i = 0; i < stone2LineSum.length; i++) {
-                        const element = stone2LineSum[i];
-                        if (disappearStones.indexOf(element) === -1) {
-                            disappearStones.push(element);
-                        }
-                    }
 
-                    if (disappearStones.length === 0) {
+                    if (stone1LineSum.length === 0 && stone2LineSum.length === 0) {
                         Event.dispatchExchangeRollbackEvent(stone1, stone2);
                     } else {
+                        if (stone1LineSum.length > 0) {
+                            stone1.disappearLink = stone1LineSum.length;
+                        }
+                        if (stone2LineSum.length > 0) {
+                            stone2.disappearLink = stone2LineSum.length;
+                        }
+
+                        let disappearStones = [].concat(stone1LineSum)
+                        for (let i = 0; i < stone2LineSum.length; i++) {
+                            const element = stone2LineSum[i];
+                            if (disappearStones.indexOf(element) === -1) {
+                                disappearStones.push(element);
+                            }
+                        }
+
                         Event.dispatchDisappearEvent(disappearStones);
                     }
                 }
@@ -78,6 +91,8 @@ cc.Class({
 
             Event.dispatchOperateEvent(false);
         });
+
+        //regist exchange rollback event
         Event.registExchangeRollbackEvent(function (stone1, stone2) {
             var allStones = [stone1, stone2];
             var callback = function (stone) {
@@ -97,13 +112,18 @@ cc.Class({
             stone1.move([cell2], callback);
             stone2.move([cell1], callback);
         });
-        Event.registDisappearEvent(function (disappearStones) {
-            let emptyCells = [];
-            let callback = function (cell) {
-                emptyCells.push(cell);
 
-                if (emptyCells.length === disappearStones.length) {
-                    Event.dispatchRenewEvent(emptyCells);
+        //regist disappear event
+        Event.registDisappearEvent(function (disappearStones) {
+            let checkStones = [].concat(disappearStones);
+            let callback = function (stone) {
+                let index = checkStones.indexOf(stone);
+                if (index > -1) {
+                    checkStones.splice(index, 1);
+                }
+
+                if (checkStones.length === 0) {
+                    Event.dispatchRenewEvent(disappearStones);
                 }
             };
 
@@ -111,7 +131,9 @@ cc.Class({
                 stone.disappear(callback);
             });
         });
-        Event.registRenewEvent(function (emptyCells) {
+
+        //regist renew event
+        Event.registRenewEvent(function (renewStones) {
             var allStones = [];
             var checkStones = [];
             var callback = function (stone) {
@@ -130,7 +152,7 @@ cc.Class({
                         const cStone = checkStones[i];
                         var cStoneLineSum = cStone.lineSum();
 
-                        if (cStoneLineSum.length>0) {
+                        if (cStoneLineSum.length > 0) {
                             var deleteSeeds = [];
                             var canAddSeed = true;
 
@@ -157,8 +179,12 @@ cc.Class({
 
                     //统计连消的stone
                     var disappearStones = [];
-                    for (let i = 0; i < seedLinkStones.length; i++) {
+                    for (let i = 0; i < seedStones.length; i++) {
+                        const seedStone = seedStones[i];
                         const linkStones = seedLinkStones[i];
+
+                        seedStone.disappearLink = linkStones.length;
+
                         for (let j = 0; j < linkStones.length; j++) {
                             const dStone = linkStones[j];
                             if (disappearStones.indexOf(dStone) === -1) {
@@ -190,6 +216,16 @@ cc.Class({
                 }
             };
 
+            let emptyCells = [];
+            //新生成等级stone
+            for (const stone of renewStones) {
+                if (stone.disappearLink - Cell.lineLimit > 0) {
+                    StoneFactory.createStone(stone.type, stone.disappearLink - Cell.lineLimit, self.content, stone.cell);
+                } else {
+                    emptyCells.push(stone.cell);
+                }
+            }
+
             for (const emptyCell of emptyCells) {
                 //现有需要掉落的stone
                 for (const stone of emptyCell.allLastStones()) {
@@ -199,7 +235,7 @@ cc.Class({
                 }
 
                 //新生成stone
-                let newStone = StoneFactory.createStone(StoneFactory.randomStoneType() + '_0', self.content, emptyCell.findBorn())
+                let newStone = StoneFactory.createStone(StoneFactory.randomStoneType(), 0, self.content, emptyCell.findBorn());
                 allStones.push(newStone);
             }
 
@@ -234,7 +270,7 @@ cc.Class({
                         st = StoneFactory.randomStoneType();
                     }
 
-                    let stone = StoneFactory.createStone(st + '_0', self.content, cell);
+                    let stone = StoneFactory.createStone(st, 0, self.content, cell);
                     allStones.push(stone);
                 }
             }

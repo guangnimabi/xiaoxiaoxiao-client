@@ -3,7 +3,7 @@ var RandomUtil = require("RandomUtil");
 var Cell = require("Cell");
 var StoneFactory = require('StoneFactory');
 
-var Stone = cc.Class({
+module.exports = cc.Class({
     extends: cc.Component,
 
     properties: () => ({
@@ -15,7 +15,11 @@ var Stone = cc.Class({
         },
         type: -1,
         level: 0,
-        label: cc.Label,
+        disappearLink: {//消除时作为seed链接stone个数
+            default: 0,
+            visible: false,
+            serializable: false
+        },
         _moveCells: [],
     }),
 
@@ -24,7 +28,6 @@ var Stone = cc.Class({
     onLoad() {
         this.node.width = Cell.size - 4;
         this.node.height = Cell.size - 4;
-        this.label.string = this.cell.id;
     },
 
     start() {
@@ -159,17 +162,19 @@ var Stone = cc.Class({
         }).start();
     },
 
-    //消除动作：消除后回调callback，返回空cell
+    //消除动作：消除后回调callback
     disappear: function (callback) {
         cc.tween(this.node)
             .to(0.2, {scale: 0})
             .call(() => {
-                callback(StoneFactory.recycleStone(this));
+                StoneFactory.recycleStone(this);
+                callback(this);
             })
             .start()
     },
 
     refresh: function () {
+        this.disappearLink = 0;
         this.node.scale = 1;
         this.node.position = this.cell.position;
     },

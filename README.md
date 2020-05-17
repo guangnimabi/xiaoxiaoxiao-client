@@ -6,7 +6,7 @@
 1. 重构：cell->stone cellData->cell (done)
 1. stone对象池 (done)
 1. 消除的一批stone，确定种子stone (done)
-1. 超过3个销毁，在种子stone上产生特效stone
+1. 超过3个销毁，在种子stone上产生特效stone (done)
 1. 定义stone效果：基础3原色效果，横竖斜消
 1. 增加十字消stone
 1. 矩形消stone
