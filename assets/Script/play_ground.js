@@ -29,6 +29,8 @@ cc.Class({
     onLoad() {
         var self = this;
 
+        StoneFactory.stoneContainer = self.content;
+
         if (self.root.width > self.root.height) {
             Cell.size = Math.floor((self.root.height - 8) / 8);
         } else {
@@ -123,7 +125,7 @@ cc.Class({
                 }
 
                 if (checkStones.length === 0) {
-                    Event.dispatchRenewEvent(disappearStones);
+                    Event.dispatchEffectEvent(disappearStones);
                 }
             };
 
@@ -132,8 +134,27 @@ cc.Class({
             });
         });
 
+        //regist effect event
+        Event.registEffectEvent(function (disappearStones) {
+            let checkStones = [].concat(disappearStones);
+            let callback = function (stone) {
+                let index = checkStones.indexOf(stone);
+                if (index > -1) {
+                    checkStones.splice(index, 1);
+                }
+
+                if (checkStones.length === 0) {
+                    Event.dispatchRenewEvent();
+                }
+            };
+
+            disappearStones.forEach(stone => {
+                stone.triggerEffect(callback);
+            });
+        });
+
         //regist renew event
-        Event.registRenewEvent(function (renewStones) {
+        Event.registRenewEvent(function () {
             var allStones = [];
             var checkStones = [];
             var callback = function (stone) {
@@ -216,16 +237,7 @@ cc.Class({
                 }
             };
 
-            let emptyCells = [];
-            //新生成等级stone
-            for (const stone of renewStones) {
-                if (stone.disappearLink - Cell.lineLimit > 0) {
-                    StoneFactory.createStone(stone.type, stone.disappearLink - Cell.lineLimit, self.content, stone.cell);
-                } else {
-                    emptyCells.push(stone.cell);
-                }
-            }
-
+            let emptyCells = Cell.getAllEmptyCells();
             for (const emptyCell of emptyCells) {
                 //现有需要掉落的stone
                 for (const stone of emptyCell.allLastStones()) {
@@ -233,9 +245,11 @@ cc.Class({
                         allStones.push(stone);
                     }
                 }
+            }
 
+            for (const emptyCell of emptyCells) {
                 //新生成stone
-                let newStone = StoneFactory.createStone(StoneFactory.randomStoneType(), 0, self.content, emptyCell.findBorn());
+                let newStone = StoneFactory.createStone(StoneFactory.randomStoneType(), 0, emptyCell.findBorn());
                 allStones.push(newStone);
             }
 
@@ -270,7 +284,7 @@ cc.Class({
                         st = StoneFactory.randomStoneType();
                     }
 
-                    let stone = StoneFactory.createStone(st, 0, self.content, cell);
+                    let stone = StoneFactory.createStone(st, 0, cell);
                     allStones.push(stone);
                 }
             }

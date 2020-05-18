@@ -1,6 +1,7 @@
 const EVENT_EXCHANGE = "event_exchange"
 const EVENT_EXCHANGE_ROLLBACK = "event_exchange_rollback"
 const EVENT_DISAPPEAR = "event_disappear"
+const EVENT_EFFECT = "event_effect"
 const EVENT_RENEW = "event_renew"
 
 module.exports = cc.Class({
@@ -81,17 +82,29 @@ module.exports = cc.Class({
             this.receiver.dispatchEvent(event);
         },
 
-        //重建事件
-        registRenewEvent: function (eventHandler) {
-            this.receiver.on(EVENT_RENEW, function (event) {
-                let renewStones = event.getUserData();
-                eventHandler(renewStones);
+        //特效事件
+        registEffectEvent: function (eventHandler) {
+            this.receiver.on(EVENT_EFFECT, function (event) {
+                let disappearStones = event.getUserData();
+                eventHandler(disappearStones);
             });
         },
 
-        dispatchRenewEvent: function (renewStones) {
+        dispatchEffectEvent: function (disappearStones) {
+            var event = new cc.Event.EventCustom(EVENT_EFFECT, false);
+            event.setUserData(disappearStones);
+            this.receiver.dispatchEvent(event);
+        },
+
+        //重建事件
+        registRenewEvent: function (eventHandler) {
+            this.receiver.on(EVENT_RENEW, function (event) {
+                eventHandler();
+            });
+        },
+
+        dispatchRenewEvent: function () {
             let event = new cc.Event.EventCustom(EVENT_RENEW, false);
-            event.setUserData(renewStones);
             this.receiver.dispatchEvent(event);
         },
     }

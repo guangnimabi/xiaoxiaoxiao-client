@@ -27,6 +27,7 @@ module.exports = cc.Class({
         STONE_TYPE_3: 3,
         STONE_TYPE_4: 4,
 
+        stoneContainer: cc.Node,
         _pools: {}, //{type_level:{StonePool}}
 
         addStonePrefab: function (prefab) {
@@ -56,7 +57,7 @@ module.exports = cc.Class({
         },
 
         //在node中创建stone，置入cell
-        createStone: function (stoneType, stoneLevel, node, cell) {
+        createStone: function (stoneType, stoneLevel, cell) {
             let key = this.getKey(stoneType, stoneLevel);
             if (key) {
                 let stone = this._pools[key].getStone();
@@ -66,7 +67,7 @@ module.exports = cc.Class({
 
                 stone.refresh();
 
-                node.addChild(stone.node);
+                this.stoneContainer.addChild(stone.node);
 
                 return stone;
             } else {

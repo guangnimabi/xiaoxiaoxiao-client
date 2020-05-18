@@ -53,6 +53,17 @@ var Cell = cc.Class({
             return null;
         },
 
+        getAllEmptyCells: function () {
+            let emptyCells = [];
+            for (const id in this._cells) {
+                const cell = this._cells[id];
+                if (cell.isCommon() && !cell.stone) {
+                    emptyCells.push(cell);
+                }
+            }
+            return emptyCells;
+        },
+
         getAllStones: function () {
             var allStones = [];
             for (const id in this._cells) {
@@ -198,7 +209,6 @@ var Cell = cc.Class({
             moveCells.push(currentCell.next);
             currentCell = currentCell.next;
         }
-        cc.log(moveCells);
         return moveCells;
     },
 
@@ -233,7 +243,7 @@ var Cell = cc.Class({
         }
     },
 
-    disappearStone: function() {
+    disappearStone: function () {
 
     }
 });

@@ -173,6 +173,24 @@ module.exports = cc.Class({
             .start()
     },
 
+    //触发特效：触发后回调callback
+    triggerEffect: function (callback) {
+        //新生成等级stone
+        if (this.disappearLink - Cell.lineLimit > 0) {
+            let newStone = StoneFactory.createStone(this.type, this.disappearLink - Cell.lineLimit, this.cell);
+            newStone.node.scale = 0;
+
+            cc.tween(newStone.node)
+                .to(0.2, {scale: 1})
+                .call(() => {
+                    callback(this);
+                })
+                .start()
+        } else {
+            callback(this);
+        }
+    },
+
     refresh: function () {
         this.disappearLink = 0;
         this.node.scale = 1;
